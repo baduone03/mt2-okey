@@ -10,7 +10,8 @@ Uygulama oyuna bağlanmaz, oyun dosyalarını değiştirmez ve otomasyon yapmaz.
 
 ## Durum
 
-Kart modeli, kurallar ve puanlama motoru tamamlandı ve testleri yazıldı. Oyun durumu,
+Kart modeli, kurallar, puanlama motoru ve oyun durumu (çekme/oynama/atma, oyun sonu)
+tamamlandı ve testleri yazıldı. Geri alma,
 arayüz ve stratejiler henüz yok (bkz. görev listesi).
 
 ## Geliştirme
