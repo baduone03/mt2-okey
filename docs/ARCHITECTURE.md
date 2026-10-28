@@ -40,7 +40,8 @@ mt2-okey/
 ├── docs/
 │   ├── ARCHITECTURE.md
 │   ├── RULES.md              # doğrulanmış/belirsiz kurallar
-│   └── BENCHMARKS.md         # ölçülen sonuçlar (uydurma yok, script çıktısı)
+│   ├── BENCHMARKS.md         # ölçülen sonuçlar ve yorum
+│   └── benchmarks/           # ham çıktı: *.json (oyun başına puanlar) + *.md tablolar
 ├── src/okey/
 │   ├── __init__.py
 │   ├── cards.py              # Color, Card, ALL_CARDS, card<->index<->bit, parse("K5")
@@ -58,15 +59,16 @@ mt2-okey/
 │   │   └── monte_carlo.py    # rollout tabanlı Strateji B
 │   └── benchmark.py          # python -m okey.benchmark --games 1000 --seed 1
 ├── app/
-│   ├── streamlit_app.py      # giriş noktası: streamlit run app/streamlit_app.py
+│   ├── streamlit_app.py      # giriş noktası + sayfa gezinmesi (Oyun / Strateji karşılaştırma)
 │   └── views/
+│       ├── game_page.py      # oyun sayfası
 │       ├── state.py          # st.session_state sarmalayıcısı
 │       ├── sidebar.py        # geri al, yeni oyun, kural ayarları
 │       ├── card_grid.py      # 3×8 tıklanabilir tablo + hızlı metin girişi
 │       ├── game_panel.py     # puan, kalan, atılan, görülmemiş, hamle onayı
 │       ├── recommendations.py # öneri paneli (avantaj/dezavantaj)
 │       ├── history.py
-│       └── compare.py        # strateji karşılaştırma ekranı
+│       └── compare.py        # strateji karşılaştırma ekranı (kayıtlı raporlar + canlı çalıştırma)
 └── tests/
     ├── test_cards.py
     ├── test_combos.py        # 170 üçlü, tüm puanlar, geçersiz üçlüler
@@ -76,7 +78,12 @@ mt2-okey/
     ├── test_app.py           # Streamlit AppTest ile başsız uçtan uca arayüz testleri
     ├── test_rules.py         # sandık sınıfları, sınır değerler 290/299/300/399/400
     ├── test_simulation.py    # tekrarsız dağıtım, CRN tekrarlanabilirliği
-    └── test_strategies.py    # greedy doğruluğu, MC ≥ greedy (küçük senaryolar)
+    ├── test_strategies.py    # greedy doğruluğu
+    ├── test_monte_carlo.py   # kesin mod = kaba kuvvet, MC ≥ greedy, CRN
+    ├── test_advisor.py
+    ├── test_stats.py
+    ├── test_benchmark.py
+    └── test_compare_page.py
 ```
 
 ## 4. Veri modeli

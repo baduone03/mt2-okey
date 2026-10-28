@@ -106,3 +106,10 @@ def test_greedy_beats_random_on_common_decks():
     greedy = [play_out(GameState(), RULES, GreedyPolicy(), o, policy_rng(2026, i)).score for i, o in enumerate(orders)]
     rand = [play_out(GameState(), RULES, RandomPolicy(), o, policy_rng(2026, i)).score for i, o in enumerate(orders)]
     assert sum(greedy) / len(greedy) > sum(rand) / len(rand)
+
+
+def test_single_deck_order_matches_list():
+    from okey.simulation import deck_order
+
+    orders = deck_orders(FULL_MASK, 6, seed=21)
+    assert [deck_order(FULL_MASK, 21, i) for i in range(6)] == orders

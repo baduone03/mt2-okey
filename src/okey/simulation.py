@@ -24,17 +24,18 @@ def _sub_seed(seed: int, index: int) -> int:
     return (seed * 1_000_003 + index) & 0xFFFF_FFFF_FFFF
 
 
+def deck_order(unseen: int, seed: int, index: int) -> tuple[Card, ...]:
+    """`deck_orders(unseen, n, seed)[index]` ile aynı permütasyonu tek başına üretir."""
+    order = list(cards_of(unseen))
+    random.Random(_sub_seed(seed, index)).shuffle(order)
+    return tuple(order)
+
+
 def deck_orders(unseen: int, n: int, seed: int) -> list[tuple[Card, ...]]:
     """Görülmemiş kartların n adet tekrarlanabilir rastgele permütasyonu."""
     if n < 0:
         raise ValueError(f"Permütasyon sayısı negatif olamaz: {n}")
-    cards = cards_of(unseen)
-    orders = []
-    for i in range(n):
-        order = list(cards)
-        random.Random(_sub_seed(seed, i)).shuffle(order)
-        orders.append(tuple(order))
-    return orders
+    return [deck_order(unseen, seed, i) for i in range(n)]
 
 
 def policy_rng(seed: int, index: int) -> random.Random:
