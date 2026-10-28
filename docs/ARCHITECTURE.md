@@ -50,12 +50,14 @@ mt2-okey/
 │   ├── state.py              # GameState (frozen), Play/Discard/Draw, legal_actions(), apply()
 │   ├── session.py            # olay günlüğü (event log), undo, replay, tutarlılık kontrolü
 │   ├── simulation.py         # play_out(state, policy, deck_order) ; CRN tohum üretimi
+│   ├── fast.py               # hızlı rollout motoru (maskeler + tablolar)
 │   ├── stats.py              # wilson_interval, mean_se, summary
 │   ├── advisor.py            # recommend(state, cfg) -> list[Recommendation]
 │   ├── strategies/
 │   │   ├── base.py           # Policy Protocol: choose(state, rng) -> Action
 │   │   ├── random_policy.py
 │   │   ├── greedy.py
+│   │   ├── selective.py      # eşikli (seçici) açgözlü
 │   │   └── monte_carlo.py    # rollout tabanlı Strateji B
 │   └── benchmark.py          # python -m okey.benchmark --games 1000 --seed 1
 ├── app/
@@ -78,7 +80,8 @@ mt2-okey/
     ├── test_app.py           # Streamlit AppTest ile başsız uçtan uca arayüz testleri
     ├── test_rules.py         # sandık sınıfları, sınır değerler 290/299/300/399/400
     ├── test_simulation.py    # tekrarsız dağıtım, CRN tekrarlanabilirliği
-    ├── test_strategies.py    # greedy doğruluğu
+    ├── test_strategies.py    # greedy/seçici doğruluğu
+    ├── test_fast.py          # hızlı motor = referans yol
     ├── test_monte_carlo.py   # kesin mod = kaba kuvvet, MC ≥ greedy, CRN
     ├── test_advisor.py
     ├── test_stats.py
@@ -177,13 +180,25 @@ potansiyel üçlülerin toplam puanı en düşük olan atılır. Atma sezgiseli 
 Rollout algoritmasının teorik özelliği: Yeterli örneklemde temel politikadan
 (açgözlü) beklentide kötü olamaz. Bu iddia benchmark ile **ölçülerek** doğrulanır.
 
-**Performans planı (ölçüm sonrası, gerektiği kadar):**
-1. Bitmask ve önceden hesaplanmış üçlü listesiyle saf Python
-2. Adaylar arasında erken eleme (successive halving)
-3. Rollout önbelleği
-4. İsteğe bağlı derinlik sınırlı expectimax + MC yaprak değerlendirmesi
+**Performans (aşama 7, ölçülerek yapıldı):**
+- Profil, maliyetin nesne katmanlarında (Card.index/bit, Combo.points, GameState
+  doğrulamaları) dağıldığını gösterdi.
+- `okey.fast`, rollout'u yalnızca tamsayı maskeleri ve önceden hesaplanmış
+  (maske, puan) tablolarıyla oynar.
+  - Oyun başına süre 0,35 ms'den 0,10 ms'ye indi (~3,7×).
+  - MC politikası oyun başına 1,39 sn'den 0,43 sn'ye indi.
+- Politikalar isteğe bağlı bir `rollout_score` hızlı yolu sunar; olmayanlar referans
+  yola (`play_out`) düşer.
+- Hızlı yolun referansla birebir aynı puanı verdiği `tests/test_fast.py` ile test edilir.
+- Bu hızla arayüzdeki karar süresi kabul edilebilir olduğu için erken eleme ve
+  önbellek eklenmedi; gereksiz karmaşıklık olurdu.
 
-Durum uzayı tam DP için büyük olabilir. Önce ölçülür, sonra karar verilir.
+**Seçici politika (aşama 7):** Destede kart varken yalnızca puanı eşik (50) ve üstü
+olan üçlüleri oynar ve atma potansiyelini de yalnızca bu üçlülerle hesaplar.
+- Tek başına açgözlüden ölçülebilir biçimde iyidir.
+- MC'nin devam stratejisi olarak ise fark yaratmadı.
+
+Sonuçlar için `docs/BENCHMARKS.md`.
 
 ## 6. Arayüz akışı
 
@@ -235,4 +250,4 @@ Her adım: kod + test + `pytest` yeşil. Test edilmeyen özellik "tamamlandı" s
 | 5.2 ✅ | `advisor.py` + öneri tablosu (P, aralık, N, gerekçe) | — |
 | 6.1 ✅ | `benchmark.py` | Aynı başlangıç tohumlarıyla 3 strateji × ≥1000 oyun |
 | 6.2 ✅ | Karşılaştırma ekranı + `docs/BENCHMARKS.md` | Sonuçlar script çıktısından alınır |
-| 7.x | Profil çıkar → erken eleme / önbellek / expectimax; README | Ölçülen hızlanma raporlanır |
+| 7.x ✅ | Profil → hızlı rollout motoru (~3,7×); seçici strateji; README | Hızlanma ve yeni strateji ölçülerek raporlandı; erken eleme/önbellek gereksiz bulundu, expectimax ileriye bırakıldı |

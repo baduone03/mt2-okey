@@ -9,7 +9,9 @@ Eşitlikler deterministik bozulur, böylece aynı durumda hep aynı hamle seçil
 from __future__ import annotations
 
 import random
+from collections.abc import Sequence
 
+from okey import fast
 from okey.cards import Card
 from okey.combos import COMBOS_BY_CARD, Combo, combos_in
 from okey.rules import RuleConfig
@@ -22,8 +24,9 @@ def live_combos(state: GameState, card: Card) -> list[Combo]:
     return [c for c in COMBOS_BY_CARD[card.index] if c.mask & available == c.mask]
 
 
-def discard_potential(state: GameState, card: Card, rules: RuleConfig) -> int:
-    return sum(c.points(rules) for c in live_combos(state, card))
+def discard_potential(state: GameState, card: Card, rules: RuleConfig, min_points: int = 0) -> int:
+    """Kartın hâlâ kurulabilir ve puanı >= min_points olan üçlülerinin toplam puanı."""
+    return sum(p for c in live_combos(state, card) if (p := c.points(rules)) >= min_points)
 
 
 def best_play(state: GameState, rules: RuleConfig) -> Combo | None:
@@ -34,10 +37,10 @@ def best_play(state: GameState, rules: RuleConfig) -> Combo | None:
     return max(combos, key=lambda c: (c.points(rules), -c.mask))
 
 
-def least_useful_card(state: GameState, rules: RuleConfig) -> Card:
+def least_useful_card(state: GameState, rules: RuleConfig, min_points: int = 0) -> Card:
     return min(
         state.hand_cards,
-        key=lambda card: (discard_potential(state, card, rules), card.number, card.color),
+        key=lambda card: (discard_potential(state, card, rules, min_points), card.number, card.color),
     )
 
 
@@ -53,3 +56,9 @@ class GreedyPolicy:
         if not can_discard(state, rules):  # üçlü yokken atma her zaman serbesttir
             raise IllegalActionError("Ne oynanabilir üçlü ne de atılabilir kart var.")
         return Discard(least_useful_card(state, rules))
+
+    def rollout_score(
+        self, state: GameState, rules: RuleConfig, order: Sequence[Card], rng: random.Random
+    ) -> int:
+        """`play_out(state, ..., self, order).score` ile aynı sonucu hızlı motorla hesaplar."""
+        return fast.rollout(state.hand, state.score, fast.order_bits(order), fast.tables(rules))

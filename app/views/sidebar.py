@@ -52,6 +52,16 @@ def render() -> None:
             key="mc_n",
             help="Daha fazla simülasyon belirsizliği azaltır ama hesaplamayı yavaşlatır.",
         )
+        st.radio(
+            "Devam stratejisi",
+            options=["greedy", "selective"],
+            format_func={"greedy": "Açgözlü", "selective": "Seçici (≥50)"}.get,
+            key="mc_rollout",
+            help=(
+                "Her aday hamleden sonra oyunun devamı bu stratejiyle simüle edilir. "
+                "Ölçümlerde ikisi arasında anlamlı fark bulunmadı (docs/BENCHMARKS.md)."
+            ),
+        )
 
         st.header("Kurallar")
         st.selectbox(

@@ -116,3 +116,12 @@ def test_recommendation_shown_and_selectable(at):
 def test_no_recommendation_while_entering_cards(at):
     click(at, "K6 K7")
     assert not any("Önerilen hamle" in m.value for m in at.markdown)
+
+
+def test_rollout_choice_changes_evaluation(at):
+    click(at, "K3 K4 K5 M4 S8")
+    advice = next(iter(at.session_state["okey_advice_cache"].values()))
+    assert advice.evaluation.rollout_policy == "Açgözlü"
+    at.radio(key="mc_rollout").set_value("selective").run()
+    advice = next(iter(at.session_state["okey_advice_cache"].values()))
+    assert advice.evaluation.rollout_policy == "Seçici (≥50)"

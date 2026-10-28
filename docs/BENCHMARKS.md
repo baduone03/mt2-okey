@@ -90,25 +90,61 @@ Simülasyon sayısını ikiye katlamak süreyi yaklaşık ikiye katlıyor ama so
 bir iyileşme getirmiyor (farklar sıfırla uyumlu). Bu ayarda darboğaz örneklem sayısı
 değil, devam stratejisinin (açgözlü) gücü.
 
+### 5. Aşama 7: hızlı motor ve seçici strateji — tohum 2026 ve 7, her biri 1.000 oyun
+
+Yeni strateji **Seçici (≥50):** Destede kart varken yalnızca 50 puan ve üstü üçlüleri
+oynar; aksi halde en az işe yarayan kartı atar. Kartın değerini de yalnızca 50+ puanlı
+üçlüler üzerinden hesaplar. Eşik, ayrı bir deste kümesinde (tohum 777, 5.000 oyun)
+taranarak seçildi. Aşağıdaki doğrulama farklı destelerde yapıldı.
+
+| Strateji | Tohum 2026: altın | gümüş+ | ortalama | Tohum 7: altın | gümüş+ | ortalama |
+|---|---|---|---|---|---|---|
+| Açgözlü | %1.3 | %24.1 | 258.9 | %1.5 | %23.4 | 258.4 |
+| Seçici (≥50) | %2.6 | %35.2 | 273.8 | %3.0 | %33.0 | 271.4 |
+| MC N=100, devam: açgözlü | %7.2 | %67.0 | 310.7 | %8.2 | %66.0 | 308.8 |
+| MC N=100, devam: seçici | %6.2 | %66.2 | 309.1 | %8.2 | %66.8 | 311.8 |
+
+Eşleştirilmiş farklar:
+
+| Karşılaştırma | Tohum 2026 | Tohum 7 |
+|---|---|---|
+| Seçici − Açgözlü, altın | +1.3 ± 0.9 puan | +1.5 ± 1.1 puan |
+| Seçici − Açgözlü, gümüş-veya-üstü | +11.1 ± 3.3 puan | +9.6 ± 3.2 puan |
+| MC(seçici) − MC(açgözlü), altın | −1.0 ± 1.3 puan | +0.0 ± 1.4 puan |
+| MC(seçici) − MC(açgözlü), gümüş-veya-üstü | −0.8 ± 2.9 puan | +0.8 ± 2.9 puan |
+| MC(seçici) − MC(açgözlü), ortalama puan | −1.5 ± 2.5 | +3.0 ± 2.5 |
+
+Bulgular:
+- **Seçici strateji tek başına açgözlüden daha iyi.** Simülasyon gerektirmeyen en iyi
+  strateji bu: altın oranı yaklaşık iki katına çıkıyor, gümüş-veya-üstü yaklaşık
+  +10 puan artıyor.
+- **MC'nin devam stratejisi olarak fark yaratmıyor.** Her iki deste kümesinde de
+  farklar sıfırla uyumlu. Bu yüzden arayüzde varsayılan devam stratejisi açgözlü
+  olarak kaldı; seçici seçenek olarak sunuluyor.
+- **Hızlı motor kararları değiştirmedi.** MC (devam: açgözlü), tohum 2026'da bölüm 1
+  ile birebir aynı sonucu verdi: %7.2 altın, 310.7 ortalama. Hızlı motor aynı
+  kararları veriyor; oyun başına süre ise 1.39 sn'den 0.43 sn'ye indi. Hızlı motor
+  ile referans yolun eşitliği ayrıca `tests/test_fast.py` ile test ediliyor.
+
 ## Yorum
 
 - **Monte Carlo açık ara en iyisi.** Aynı destelerde açgözlüye göre altın sandık
   oranını yaklaşık %1,3–1,5'ten %7–8'e çıkarıyor. Bu, yaklaşık 5 kat demek; fark
   her iki deste kümesinde de belirsizlik aralığının çok üstünde. Gümüş-veya-üstü
   oranını da yaklaşık %24'ten %66–67'ye çıkarıyor.
-- **Mutlak altın oranı hâlâ düşük (~%7–8).** Monte Carlo yalnızca bir adım ileriye
-  bakıyor; ondan sonrası açgözlü oynanıyor. Daha güçlü bir devam stratejisi (iki
-  aşamalı rollout, sezgisel atma kuralları) altın oranını yükseltebilir. Bu, 7.
-  aşamadaki iyileştirme adayıdır. Sonuç gerçek oyundaki kurallar doğrulanmadan
+- **Mutlak altın oranı hâlâ düşük (~%7–8).** Daha fazla simülasyon (N=200) da daha
+  güçlü bir tek başına strateji (seçici) de devam stratejisi olarak bunu ölçülebilir
+  biçimde artırmadı. Bir sonraki aday, iki adım derinliğinde arama (expectimax) gibi
+  daha pahalı yöntemler. Ancak 400 puanın bu kurallar altında ne kadar ulaşılabilir
+  olduğu da bilinmiyor. Sonuçlar gerçek oyundaki kurallar doğrulanmadan
   genellenmemelidir.
 - **Rastgele strateji neredeyse hiç gümüş/altın görmüyor.** Çünkü rastgele hamleler
   çoğunlukla puansız kart atmak oluyor.
 - **N=100 ile N=200 arasında fark ölçülemedi.** Altın, gümüş ve puan farklarının hepsi
   sıfırla uyumlu. Oyun içi öneride daha büyük N, tek bir kararın tahminini daraltır.
   Ancak strateji olarak daha iyi oynamayı sağlamaz.
-- **Maliyet:** Monte Carlo (N=100) oyun başına yaklaşık 1,3–1,4 sn sürüyor. Bu,
-  karar başına yaklaşık 0,1 sn demek. Arayüzde varsayılan N=500 olduğundan bir karar
-  yaklaşık 1 sn sürer.
+- **Maliyet:** Hızlı motorla Monte Carlo (N=100) oyun başına yaklaşık 0,4 sn sürüyor.
+  Arayüzde varsayılan N=500 ile bir karar, aday sayısına göre yaklaşık 0,3–0,6 sn sürer.
 
 ## Yeniden üretme
 
@@ -121,6 +157,15 @@ python -m okey.benchmark --games 1000 --seed 7 --mc-n 100 --workers 4 \
     --json docs/benchmarks/repeat_seed7_n1000_mc100.json
 python -m okey.benchmark --games 1000 --seed 2026 --mc-n 200 --workers 4 \
     --json docs/benchmarks/main_seed2026_n1000_mc200.json
+# Aşama 7 (seçici strateji ve iki MC devam stratejisi; artık varsayılan politika seti):
+python -m okey.benchmark --games 1000 --seed 2026 --mc-n 100 --workers 4 \
+    --json docs/benchmarks/v2_seed2026_n1000_mc100.json
+python -m okey.benchmark --games 1000 --seed 7 --mc-n 100 --workers 4 \
+    --json docs/benchmarks/v2_seed7_n1000_mc100.json
 ```
+
+İlk dört komut, aşama 6'daki politika setiyle (seçici strateji eklenmeden önce)
+çalıştırılmıştır. Bugünkü CLI aynı komutlarla ek olarak seçici stratejileri de çalıştırır.
+Ortak stratejilerin puanları değişmez.
 
 Aynı tohum ve kurallarla puanlar birebir aynı çıkar; süreler makineye göre değişir.

@@ -103,3 +103,12 @@ def test_discard_with_combo_on_table_is_explained():
     advice = recommend(state, RULES, n_simulations=20)
     rec = next(r for r in advice.recommendations if r.action == Discard(parse_card("S8")))
     assert any("puan alınmaz" in c for c in rec.cons)
+
+
+def test_recommend_with_selective_rollout():
+    from okey.strategies import SelectivePolicy
+
+    state = state_of("K3 K4 K5 M4 S8")
+    advice = recommend(state, RULES, n_simulations=30, rollout=SelectivePolicy())
+    assert advice.evaluation.rollout_policy == "Seçici (≥50)"
+    assert {r.action for r in advice.recommendations} == set(legal_actions(state, RULES))

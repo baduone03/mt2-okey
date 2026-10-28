@@ -5,10 +5,13 @@ from __future__ import annotations
 import streamlit as st
 
 from okey.advisor import Advice, Recommendation, recommend
+from okey.strategies import GreedyPolicy, SelectivePolicy
 
 from views import state as ui
 
 MC_N = "mc_n"
+ROLLOUT = "mc_rollout"
+ROLLOUTS = {"greedy": GreedyPolicy(), "selective": SelectivePolicy()}
 _CACHE = "okey_advice_cache"
 
 
@@ -28,12 +31,13 @@ def _interval(ci: tuple[float, float]) -> str:
 def _advice() -> Advice | None:
     session = ui.session()
     n = st.session_state.get(MC_N, 500)
-    key = (session.state, session.rules, n)
+    rollout_key = st.session_state.get(ROLLOUT, "greedy")
+    key = (session.state, session.rules, n, rollout_key)
     cache = st.session_state.setdefault(_CACHE, {})
     if key not in cache:
         with st.spinner(f"{n} simülasyonla hamleler değerlendiriliyor…"):
             cache.clear()  # yalnızca son karar anını sakla
-            cache[key] = recommend(session.state, session.rules, n)
+            cache[key] = recommend(session.state, session.rules, n, rollout=ROLLOUTS[rollout_key])
     return cache[key]
 
 

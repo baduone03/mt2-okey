@@ -23,10 +23,10 @@ from itertools import permutations
 
 from okey.cards import Card, cards_of
 from okey.rules import RuleConfig
-from okey.simulation import deck_orders, play_after, policy_rng
-from okey.state import Action, GameState, IllegalActionError, Phase, Play, legal_actions
+from okey.simulation import deck_orders, policy_rng
+from okey.state import Action, GameState, IllegalActionError, Phase, Play, apply, legal_actions
 from okey.stats import Z_95, mean_and_se, median, paired_difference, wilson_interval
-from okey.strategies.base import Policy
+from okey.strategies.base import Policy, rollout_score
 from okey.strategies.greedy import GreedyPolicy
 
 
@@ -175,8 +175,9 @@ def evaluate(
 
     estimates = []
     for action in actions:
+        after = apply(state, action, rules)
         scores = tuple(
-            play_after(state, action, rules, rollout, order, policy_rng(seed, i)).score
+            rollout_score(rollout, after, rules, order, policy_rng(seed, i))
             for i, order in enumerate(orders)
         )
         estimates.append(

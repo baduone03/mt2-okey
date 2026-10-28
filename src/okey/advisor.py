@@ -14,6 +14,7 @@ from okey.cards import Card
 from okey.combos import ComboKind, combos_in
 from okey.rules import RuleConfig
 from okey.state import Action, Discard, GameState, Phase, Play
+from okey.strategies.base import Policy
 from okey.strategies.greedy import GreedyPolicy, discard_potential, live_combos
 from okey.strategies.monte_carlo import CandidateEstimate, Evaluation, evaluate
 
@@ -128,13 +129,20 @@ def _percent(p: float) -> str:
 
 
 def recommend(
-    state: GameState, rules: RuleConfig, n_simulations: int = 500, seed: int | None = None
+    state: GameState,
+    rules: RuleConfig,
+    n_simulations: int = 500,
+    seed: int | None = None,
+    rollout: Policy | None = None,
 ) -> Advice | None:
-    """Tüm aday hamleleri Monte Carlo ile değerlendirir; karar aşaması dışında None."""
+    """Tüm aday hamleleri Monte Carlo ile değerlendirir; karar aşaması dışında None.
+
+    `rollout`: adaydan sonra oyunun devamını oynayan politika (varsayılan: açgözlü).
+    """
     if state.phase(rules) is not Phase.DECIDE:
         return None
     seed = decision_seed(state) if seed is None else seed
-    ev = evaluate(state, rules, n_simulations, seed)
+    ev = evaluate(state, rules, n_simulations, seed, rollout)
     greedy_action = GreedyPolicy().choose(state, rules, random.Random(0))
     greedy_est = ev.estimate_for(greedy_action)
     best = ev.best

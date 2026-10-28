@@ -91,3 +91,58 @@ def test_random_policy_is_reproducible_and_varies():
     again = [RandomPolicy().choose(state, RULES, random.Random(s)) for s in range(40)]
     assert picks == again
     assert len(set(picks)) > 3
+
+
+# --- Seçici politika ---
+
+from okey.strategies import SelectivePolicy  # noqa: E402
+
+
+def test_selective_discards_instead_of_low_combo():
+    state = hand_state("K1 M2 S3 K8 M6")  # tek üçlü: K1-M2-S3 = 10 puan, destede kart var
+    action = SelectivePolicy(50).choose(state, RULES, RNG)
+    assert isinstance(action, Discard)
+    assert GreedyPolicy().choose(state, RULES, RNG) == Play(make_combo(parse_cards("K1 M2 S3")))
+
+
+def test_selective_plays_combo_above_threshold():
+    state = hand_state("K6 K7 K8 M1 S3")
+    assert SelectivePolicy(50).choose(state, RULES, RNG) == Play(make_combo(parse_cards("K6 K7 K8")))
+
+
+def test_selective_plays_low_combo_when_deck_empty_or_strict():
+    full = mask_of(ALL_CARDS)
+    hand = mask_of(parse_cards("K1 M2 S3 K8 M6"))
+    empty_deck = GameState(hand=hand, discarded=full & ~hand)
+    assert SelectivePolicy(50).choose(empty_deck, RULES, RNG) == Play(make_combo(parse_cards("K1 M2 S3")))
+    state = hand_state("K1 M2 S3 K8 M6")
+    assert SelectivePolicy(50).choose(state, STRICT, RNG) == Play(make_combo(parse_cards("K1 M2 S3")))
+
+
+def test_selective_discard_ignores_low_value_potential():
+    # K1'in canlı üçlüleri yalnızca düşük puanlı (1-1-1 = 20, 1-2-3 serileri <= 50);
+    # eşik 60 iken potansiyeli 0 sayılır ve ilk atılan olur.
+    state = hand_state("K1 M5 S7 K8 M3")
+    assert SelectivePolicy(60).choose(state, RULES, RNG) == Discard(parse_card("K1"))
+
+
+def test_selective_rejects_negative_threshold():
+    with pytest.raises(ValueError):
+        SelectivePolicy(-1)
+
+
+@pytest.mark.parametrize("rules", [RULES, STRICT], ids=["default", "strict"])
+def test_selective_only_chooses_legal_actions(rules):
+    policy = SelectivePolicy()
+    rng = random.Random(3)
+    for seed in range(30):
+        deck = list(ALL_CARDS)
+        random.Random(seed).shuffle(deck)
+        state = GameState()
+        while state.phase(rules) is not Phase.FINISHED:
+            if state.phase(rules) is Phase.AWAITING_DRAW:
+                action = Draw(deck.pop())
+            else:
+                action = policy.choose(state, rules, rng)
+                assert action in legal_actions(state, rules)
+            state = apply(state, action, rules)

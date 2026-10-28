@@ -27,6 +27,7 @@ from okey.strategies.base import Policy
 from okey.strategies.greedy import GreedyPolicy
 from okey.strategies.monte_carlo import MonteCarloPolicy
 from okey.strategies.random_policy import RandomPolicy
+from okey.strategies.selective import SelectivePolicy
 
 
 @dataclass(frozen=True)
@@ -224,14 +225,23 @@ def main(argv: Sequence[str] | None = None) -> None:
     parser.add_argument("--games", type=int, default=1000)
     parser.add_argument("--seed", type=int, default=2026)
     parser.add_argument("--mc-n", type=int, default=100, help="Monte Carlo için aday başına simülasyon (0: MC yok)")
+    parser.add_argument(
+        "--mc-rollout",
+        choices=["greedy", "selective", "both"],
+        default="both",
+        help="Monte Carlo devam stratejisi",
+    )
     parser.add_argument("--workers", type=int, default=1)
     parser.add_argument("--rules", choices=sorted(PRESETS), default="official_2026")
     parser.add_argument("--json", help="Ham sonuçların yazılacağı JSON dosyası")
     args = parser.parse_args(argv)
 
-    policies: list[Policy] = [RandomPolicy(), GreedyPolicy()]
+    policies: list[Policy] = [RandomPolicy(), GreedyPolicy(), SelectivePolicy()]
     if args.mc_n > 0:
-        policies.append(MonteCarloPolicy(args.mc_n))
+        if args.mc_rollout in ("greedy", "both"):
+            policies.append(MonteCarloPolicy(args.mc_n, GreedyPolicy()))
+        if args.mc_rollout in ("selective", "both"):
+            policies.append(MonteCarloPolicy(args.mc_n, SelectivePolicy()))
     report = run_benchmark(policies, PRESETS[args.rules], args.games, args.seed, args.workers)
     if args.json:
         with open(args.json, "w", encoding="utf-8") as fh:
