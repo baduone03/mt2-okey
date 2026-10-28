@@ -15,8 +15,9 @@ APP = str(Path(__file__).resolve().parent.parent / "app" / "streamlit_app.py")
 
 @pytest.fixture
 def at() -> AppTest:
-    app = AppTest.from_file(APP, default_timeout=10).run()
+    app = AppTest.from_file(APP, default_timeout=30).run()
     assert not app.exception
+    app.select_slider(key="mc_n").set_value(100).run()  # testleri hızlı tut
     return app
 
 
@@ -103,11 +104,13 @@ def test_new_game(at):
 def test_recommendation_shown_and_selectable(at):
     click(at, "K6 K7 K8 M7 S7")
     headings = [m.value for m in at.markdown]
-    assert any("Önerilen hamle: Oyna K6-K7-K8 (+100)" in h for h in headings)
+    assert any(h.startswith("#### Önerilen hamle:") for h in headings)
+    labels = [m.label for m in at.metric]
+    assert {"Altın sandık", "Gümüş sandık", "Beklenen puan", "Medyan puan"} <= set(labels)
+    advice = next(iter(at.session_state["okey_advice_cache"].values()))
+    assert advice.best.estimate.n == 100
     at.button(key="select_recommendation").click().run()
-    assert at.session_state["okey_selection"] == frozenset(parse_cards("K6 K7 K8"))
-    at.button(key="confirm_move").click().run()
-    assert session(at).state.score == 100
+    assert at.session_state["okey_selection"] == frozenset(advice.best.cards)
 
 
 def test_no_recommendation_while_entering_cards(at):

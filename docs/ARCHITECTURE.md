@@ -152,9 +152,14 @@ potansiyel üçlülerin toplam puanı en düşük olan atılır. Atma sezgiseli 
    - `P(altın)` ve `P(gümüş)`: Wilson %95 aralığıyla birlikte
    - `E[skor]` ve standart hatası
    - medyan skor
-3. Sıralama sözlükseldir: P(altın) → P(gümüş) → E[skor].
-   Fark, eşleştirilmiş standart hatanın altındaysa adaylar "istatistiksel olarak
-   eşit" diye işaretlenir.
+3. Sıralama gürültüye dayanıklı sözlükseldir:
+   - Altın olasılığı en yüksek adaydan eşleştirilmiş farkla anlamlı biçimde
+     (z = 1,96) kötü olan adaylar elenir.
+   - Kalanlar arasında gümüş-veya-üstü olasılığı için aynı eleme yapılır.
+   - Kalanlar arasından beklenen puanı en yüksek olan seçilir.
+   - En iyiden ayırt edilemeyen adaylar "≈ en iyi" diye işaretlenir.
+   - Kalan kart sayısının tüm sıraları bütçeye sığıyorsa (k! ≤ N) hepsi denenir.
+     Bu durumda sonuç devam politikasına göre kesindir ve eleme saf sözlükseldir.
 4. Sonuç her zaman şu bilgilerle birlikte gösterilir:
    - simülasyon sayısı
    - güven aralığı
@@ -219,8 +224,8 @@ Her adım: kod + test + `pytest` yeşil. Test edilmeyen özellik "tamamlandı" s
 | 4.1 ✅ | `strategies/greedy.py` + `random_policy.py` | Elle hesaplanmış senaryolarda doğru seçim |
 | 4.2 ✅ | `simulation.py`: `play_out`, CRN tohumları | Tekrarsız dağıtım, aynı tohum → aynı oyun |
 | 4.3 ✅ | Arayüzde açgözlü öneri | — |
-| 5.1 | `stats.py` + `strategies/monte_carlo.py` | Küçük senaryolarda MC sıralaması ile kaba kuvvet sonucu tutarlı |
-| 5.2 | `advisor.py` + öneri tablosu (P, aralık, N, gerekçe) | — |
+| 5.1 ✅ | `stats.py` + `strategies/monte_carlo.py` | Küçük senaryolarda MC sıralaması ile kaba kuvvet sonucu tutarlı |
+| 5.2 ✅ | `advisor.py` + öneri tablosu (P, aralık, N, gerekçe) | — |
 | 6.1 | `benchmark.py` | Aynı başlangıç tohumlarıyla 3 strateji × ≥1000 oyun |
 | 6.2 | Karşılaştırma ekranı + `docs/BENCHMARKS.md` | Sonuçlar script çıktısından alınır |
 | 7.x | Profil çıkar → erken eleme / önbellek / expectimax; README | Ölçülen hızlanma raporlanır |

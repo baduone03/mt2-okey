@@ -44,6 +44,15 @@ def render() -> None:
         c1.button("↶ Geri al", on_click=_undo, disabled=not session.can_undo, width="stretch")
         c2.button("Yeni oyun", on_click=_new_game, width="stretch")
 
+        st.header("Simülasyon")
+        st.select_slider(
+            "Aday başına simülasyon",
+            options=[100, 250, 500, 1000, 2000],
+            value=500,
+            key="mc_n",
+            help="Daha fazla simülasyon belirsizliği azaltır ama hesaplamayı yavaşlatır.",
+        )
+
         st.header("Kurallar")
         st.selectbox(
             "Kural seti",

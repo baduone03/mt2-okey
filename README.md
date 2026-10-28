@@ -12,8 +12,12 @@ Uygulama oyuna bağlanmaz, oyun dosyalarını değiştirmez ve otomasyon yapmaz.
 
 Tamamlanan ve test edilenler: kart modeli, kurallar, puanlama motoru, oyun durumu,
 geri alınabilir hamle geçmişi, elle kart girişi yapılan Streamlit arayüzü, rastgele ve
-açgözlü stratejiler, simülasyon altyapısı ve arayüzde açgözlü hamle önerisi.
-Monte Carlo optimizasyonu ve sandık olasılığı tahminleri henüz yok (bkz. görev listesi).
+açgözlü stratejiler, simülasyon altyapısı ve Monte Carlo hamle önerileri (altın/gümüş
+sandık olasılığı, beklenen puan, %95 aralıklar). Strateji karşılaştırma ekranı ve
+benchmark raporu henüz yok (bkz. görev listesi).
+
+Öneriler kesin olasılık değil, simülasyon tahminidir. Kenar çubuğundaki "Doğrulanmamış
+kurallar" bölümündeki varsayımlara bağlıdır.
 
 ## Çalıştırma
 

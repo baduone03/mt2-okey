@@ -52,3 +52,54 @@ def test_discard_with_live_combos_lists_loss():
     rec = greedy_recommendation(state_of("K1 M3 S5 K7 M8"), RULES)
     assert isinstance(rec.action, Discard)
     assert any("kalıcı olarak kaybolur" in c for c in rec.cons)
+
+
+# --- Monte Carlo önerileri ---
+
+from okey.advisor import MC_STRATEGY, decision_seed, recommend  # noqa: E402
+from okey.cards import FULL_MASK  # noqa: E402
+from okey.state import legal_actions  # noqa: E402
+
+
+def endgame(hand: str, unseen: str, score: int) -> GameState:
+    hand_mask = mask_of(parse_cards(hand))
+    rest = FULL_MASK & ~hand_mask & ~mask_of(parse_cards(unseen))
+    return GameState(hand=hand_mask, discarded=rest, score=score)
+
+
+def test_recommend_none_outside_decision_phase():
+    assert recommend(GameState(), RULES) is None
+
+
+def test_recommend_beats_greedy_in_silver_trap():
+    state = endgame("K2 K4 M5 S2 S6", "K3 K8 S1 S7", 240)
+    advice = recommend(state, RULES, n_simulations=100)
+    best = advice.best
+    assert best.strategy == MC_STRATEGY
+    assert best.action == Discard(parse_card("M5"))
+    assert not best.is_greedy_choice
+    assert best.estimate.p_silver_or_better == 1.0
+    assert any(
+        "Açgözlü seçime (K4-M5-S6, +40) göre:" in p and "%0.0 → %100.0" in p and "290 → " in p
+        for p in best.pros
+    )
+    greedy = [r for r in advice.recommendations if r.is_greedy_choice]
+    assert len(greedy) == 1 and greedy[0].action == Play(make_combo(parse_cards("K4 M5 S6")))
+    assert advice.evaluation.exact
+
+
+def test_recommend_covers_all_legal_actions_and_is_reproducible():
+    state = state_of("K3 K4 K5 M4 S8")
+    advice = recommend(state, RULES, n_simulations=40)
+    assert {r.action for r in advice.recommendations} == set(legal_actions(state, RULES))
+    assert all(r.estimate.n == 40 for r in advice.recommendations)
+    assert recommend(state, RULES, n_simulations=40) == advice
+    assert advice.evaluation.seed == decision_seed(state)
+    assert advice.recommendations[0].tied_with_best
+
+
+def test_discard_with_combo_on_table_is_explained():
+    state = state_of("K3 K4 K5 M4 S8")
+    advice = recommend(state, RULES, n_simulations=20)
+    rec = next(r for r in advice.recommendations if r.action == Discard(parse_card("S8")))
+    assert any("puan alınmaz" in c for c in rec.cons)
