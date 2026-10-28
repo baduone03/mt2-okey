@@ -1,0 +1,2 @@
+# Streamlit Community Cloud ve hızlı kurulum için. Uygulama src/ dizinini kendisi yola ekler.
+streamlit>=1.50
