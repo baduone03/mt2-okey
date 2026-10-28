@@ -97,3 +97,33 @@ def selected_action(
     if not selection:
         return None, "Oynamak için 3 kart, atmak için 1 kart seçin."
     return None, f"{len(selection)} kart seçili: oynamak için 3, atmak için 1 kart seçin."
+
+
+def handle_simple_click(session: GameSession, card: Card) -> ClickResult:
+    """Sade ekranda karta dokunma: seçim yoktur, yalnızca kart girişi ve düzeltme.
+
+    - Görülmemiş kart: kart bekleniyorsa masaya eklenir.
+    - Masadaki kart: yanlış girişse kaldırılır (karar aşamasında da).
+    """
+    phase = session.phase
+    zone = card_zone(session.state, card)
+    if phase is Phase.FINISHED:
+        return ClickResult(session, frozenset(), "Oyun bitti. Yeni oyun başlatın veya geri alın.")
+    if zone in (Zone.PLAYED, Zone.DISCARDED):
+        return ClickResult(session, frozenset(), f"{card} zaten {zone.value}; düzeltmek için Geri al'a basın.")
+    try:
+        if zone is Zone.HAND:
+            return ClickResult(session.remove_draw(card), frozenset())
+        if phase is Phase.AWAITING_DRAW:
+            return ClickResult(session.draw(card), frozenset())
+    except IllegalActionError as exc:
+        return ClickResult(session, frozenset(), str(exc))
+    return ClickResult(
+        session, frozenset(), "Masa dolu. Önce önerilen hamleyi yapıp \"Yaptım\"a basın."
+    )
+
+
+def cards_needed(session: GameSession) -> int:
+    """Masanın dolması için girilmesi gereken kart sayısı."""
+    state = session.state
+    return min(session.rules.hand_size - state.hand.bit_count(), state.deck_remaining)

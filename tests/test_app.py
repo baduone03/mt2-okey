@@ -1,4 +1,4 @@
-"""Streamlit arayüzünün başsız (headless) uçtan uca testleri."""
+"""Detaylı oyun sayfasının başsız (headless) uçtan uca testleri."""
 
 from pathlib import Path
 
@@ -10,12 +10,22 @@ from streamlit.testing.v1 import AppTest  # noqa: E402
 from okey.cards import parse_card, parse_cards  # noqa: E402
 from okey.state import Phase  # noqa: E402
 
-APP = str(Path(__file__).resolve().parent.parent / "app" / "streamlit_app.py")
+ROOT = Path(__file__).resolve().parent.parent
+
+# Uygulamanın varsayılan sayfası sade ekrandır; bu testler detaylı sayfayı doğrudan çizer.
+SCRIPT = f"""
+import sys
+sys.path[:0] = [{str(ROOT / "src")!r}, {str(ROOT / "app")!r}]
+from views import game_page
+from views import state as ui
+ui.init()
+game_page.render()
+"""
 
 
 @pytest.fixture
 def at() -> AppTest:
-    app = AppTest.from_file(APP, default_timeout=30).run()
+    app = AppTest.from_string(SCRIPT, default_timeout=30).run()
     assert not app.exception
     app.select_slider(key="mc_n").set_value(100).run()  # testleri hızlı tut
     return app

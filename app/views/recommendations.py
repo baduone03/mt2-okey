@@ -28,21 +28,22 @@ def _interval(ci: tuple[float, float]) -> str:
     return f"{_pct(ci[0])} – {_pct(ci[1])}"
 
 
-def _advice() -> Advice | None:
+def get_advice(default_n: int = 500) -> Advice | None:
+    """Mevcut karar anı için öneriler (aynı durum için önbellekten)."""
     session = ui.session()
-    n = st.session_state.get(MC_N, 500)
+    n = st.session_state.get(MC_N, default_n)
     rollout_key = st.session_state.get(ROLLOUT, "greedy")
     key = (session.state, session.rules, n, rollout_key)
     cache = st.session_state.setdefault(_CACHE, {})
     if key not in cache:
-        with st.spinner(f"{n} simülasyonla hamleler değerlendiriliyor…"):
+        with st.spinner("Hesaplanıyor…"):
             cache.clear()  # yalnızca son karar anını sakla
             cache[key] = recommend(session.state, session.rules, n, rollout=ROLLOUTS[rollout_key])
     return cache[key]
 
 
 def render() -> None:
-    advice = _advice()
+    advice = get_advice()
     if advice is None:
         return
     ev = advice.evaluation

@@ -92,3 +92,55 @@ def test_selected_discard_respects_strict_rule():
     session = click_all(GameSession(strict), "K3 K4 K5 M4 S8")
     action, msg = selected_action(session, frozenset({parse_card("S8")}))
     assert action is None and "yasak" in msg
+
+
+# --- Sade ekran ---
+
+from okey.board import cards_needed, handle_simple_click  # noqa: E402
+
+
+def simple_click_all(session: GameSession, text: str) -> GameSession:
+    for card in parse_cards(text):
+        result = handle_simple_click(session, card)
+        assert result.message is None, result.message
+        session = result.session
+    return session
+
+
+def test_simple_click_enters_and_removes_cards():
+    session = simple_click_all(GameSession(), "K1 K2 K3 M4 S8")
+    assert session.phase is Phase.DECIDE
+    assert cards_needed(session) == 0
+    fixed = handle_simple_click(session, parse_card("S8"))  # masa doluyken bile düzeltme
+    assert fixed.message is None
+    assert cards_needed(fixed.session) == 1
+    assert parse_card("S8") not in fixed.session.state.hand_cards
+
+
+def test_simple_click_rejects_unseen_when_full_and_used_cards():
+    session = simple_click_all(GameSession(), "K3 K4 K5 M4 S8")
+    r = handle_simple_click(session, parse_card("K1"))
+    assert r.session is session and "Yaptım" in r.message
+    after = session.play(parse_cards("K3 K4 K5"))
+    assert cards_needed(after) == 3
+    r = handle_simple_click(after, parse_card("K3"))
+    assert r.session is after and "Geri al" in r.message
+
+
+def test_simple_click_cannot_remove_card_before_a_move():
+    session = simple_click_all(GameSession(), "K1 M3 S5 K7 M8").discard(parse_card("K1"))
+    session = simple_click_all(session, "S8")
+    r = handle_simple_click(session, parse_card("M3"))  # M3 hamleden önce girilmişti
+    assert r.session is session and "geri alın" in r.message
+    assert handle_simple_click(session, parse_card("S8")).message is None  # yeni giriş silinebilir
+
+
+def test_cards_needed_near_end_of_deck():
+    from okey.cards import ALL_CARDS, mask_of
+    from okey.state import GameState
+
+    hand = mask_of(parse_cards("K1 M3"))
+    unseen = mask_of(parse_cards("S5"))
+    state = GameState(hand=hand, discarded=mask_of(ALL_CARDS) & ~hand & ~unseen)
+    session = GameSession(OFFICIAL_2026, (), (state,))
+    assert cards_needed(session) == 1

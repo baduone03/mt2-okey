@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import streamlit as st
 
-from okey.board import Zone, card_zone, handle_card_click
+from okey.board import Zone, card_zone, handle_card_click, handle_simple_click
 from okey.cards import NUMBERS, Card, Color, CardParseError, parse_cards
 from okey.state import GameState, Phase
 
@@ -18,7 +18,7 @@ def _key(card: Card) -> str:
     return f"card-{card.code}"
 
 
-def _card_css(card: Card, zone: Zone, selected: bool) -> str:
+def _card_css(card: Card, zone: Zone, selected: bool, highlighted: bool = False) -> str:
     color = COLOR_HEX[card.color]
     base = f".st-key-{_key(card)} button"
     # Streamlit'in hover/focus stilleri kart rengini ezmesin.
@@ -30,6 +30,8 @@ def _card_css(card: Card, zone: Zone, selected: bool) -> str:
         )
         if selected:
             rules += "outline:3px solid #2e7d32;outline-offset:2px;transform:translateY(-3px);"
+        if highlighted:  # önerilen hamlenin kartları
+            rules += "outline:4px solid #111111;outline-offset:2px;transform:translateY(-3px);"
     elif zone is Zone.UNSEEN:
         rules = f"background:transparent;color:{color};border:2px solid {color};font-weight:600;"
     else:  # oynanmış / atılmış
@@ -42,18 +44,26 @@ def _on_click(card: Card) -> None:
     ui.apply_click(handle_card_click(ui.session(), ui.selection(), card))
 
 
-def render() -> None:
+def _on_simple_click(card: Card) -> None:
+    ui.apply_click(handle_simple_click(ui.session(), card))
+
+
+def render(simple: bool = False, highlight: frozenset[Card] = frozenset()) -> None:
+    """Kart tablosu. `simple`: sade ekran (seçim yok, dokunma = giriş/düzeltme)."""
     session = ui.session()
     state = session.state
-    selection = ui.selection()
+    selection = frozenset() if simple else ui.selection()
 
-    css = [_card_css(card, card_zone(state, card), card in selection) for card in _all_cards()]
+    css = [
+        _card_css(card, card_zone(state, card), card in selection, card in highlight)
+        for card in _all_cards()
+    ]
     st.html(f"<style>{GRID_CSS}{''.join(css)}</style>")
 
     with st.container(key="card-grid"):
-        _render_rows(state)
+        _render_rows(state, _on_simple_click if simple else _on_click)
 
-    if session.phase is Phase.AWAITING_DRAW:
+    if not simple and session.phase is Phase.AWAITING_DRAW:
         _quick_entry()
 
 
@@ -66,7 +76,7 @@ GRID_CSS = (
 )
 
 
-def _render_rows(state: GameState) -> None:
+def _render_rows(state: GameState, on_click) -> None:
     for color in Color:
         cols = st.columns([1.4] + [1] * len(NUMBERS), vertical_alignment="center")
         cols[0].markdown(
@@ -81,7 +91,7 @@ def _render_rows(state: GameState) -> None:
             col.button(
                 label,
                 key=_key(card),
-                on_click=_on_click,
+                on_click=on_click,
                 args=(card,),
                 width="stretch",
                 help=f"{color.label_tr} {number} — {zone.value}",
