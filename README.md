@@ -17,30 +17,35 @@ pip install -e .
 streamlit run app/streamlit_app.py
 ```
 
-Tarayıcıda iki sayfa açılır: **Oyun** ve **Strateji karşılaştırma**.
+Tarayıcıda üç sayfa var: **Oyun** (sade ekran, varsayılan), **Detaylı** ve
+**Strateji karşılaştırma**.
 
-## Kullanım
+## Kullanım (sade ekran)
 
-1. **Kartları girin.** Masaya açılan 5 kartı 3×8 tablodan tıklayın veya "Hızlı giriş"
-   kutusuna `K5 M6 S7` yazın (K = kırmızı, M = mavi, S = sarı). Yanlış girdiğiniz karta
-   tekrar tıklamak onu kaldırır.
-2. **Öneriyi okuyun.** Masa dolunca her geçerli hamle Monte Carlo ile değerlendirilir.
-   Her hamle için şunlar gösterilir:
-   - altın ve gümüş sandık olasılığı (%95 aralıklarıyla);
-   - beklenen ve medyan oyun sonu puanı;
-   - avantajlar ve dezavantajlar.
+1. Masaya açılan 5 kartı tablodan işaretle.
+2. Ekran tek bir komut verir, örneğin **"AT 8"** veya **"OYNA 3 4 5"**. Önerilen kartlar
+   tabloda kalın çerçeveyle gösterilir.
+3. Oyunda yap ve **"✓ Yaptım"**a bas.
+4. Ekran **"Yerine gelen N kartı işaretle"** der. Yeni gelen kartları işaretle ve
+   2. adıma dön.
 
-   En iyi hamle üstte gösterilir; tüm adaylar bir tabloda karşılaştırılabilir.
-3. **Yaptığınız hamleyi onaylayın.** "Öneriyi seç" yalnızca kartları seçer. Oyunda ne
-   yaptıysanız (önerilen olmak zorunda değil) onu seçip onaylayın.
-4. **Yeni gelen kartları girin**, ardından tekrar 2. adıma dönün. Hatalı bir girişi
-   kenar çubuğundaki "Geri al" ile düzeltin.
+Düzeltme ve diğer seçenekler:
+- Yanlış girdiğin karta tekrar dokunmak onu siler.
+- Önerilenden farklı bir şey yaptıysan "Başka bir hamle yaptım" bölümünden seç.
+- "Geri al" son adımı geri alır. "Yeni oyun" onay ister.
 
-Kenar çubuğu ayarları:
-- **Simülasyon sayısı:** Daha fazlası belirsizliği azaltır ama yavaşlatır.
-- **Devam stratejisi:** Her aday hamleden sonra oyunun nasıl simüle edileceği.
-- **"Üçlü varken kart atmak yasak" kuralı:** Bu kural kaynaklarda net değil. Oyunda
-  gözlemlediğinize göre ayarlayın.
+## Detaylı sayfa
+
+Detaylı sayfa aynı oyunu şu ek bilgilerle gösterir:
+- her hamle için altın/gümüş sandık olasılıkları (%95 aralıklarıyla);
+- beklenen puan;
+- avantaj/dezavantaj açıklamaları.
+
+Kenar çubuğundan şunlar ayarlanır:
+- simülasyon sayısı;
+- devam stratejisi;
+- "üçlü varken kart atmak yasak" kuralı. Bu kural kaynaklarda net değil; oyunda
+  gözlemlediğine göre ayarla.
 
 ## Stratejiler ve ölçülen sonuçlar
 

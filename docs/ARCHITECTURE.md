@@ -61,9 +61,10 @@ mt2-okey/
 │   │   └── monte_carlo.py    # rollout tabanlı Strateji B
 │   └── benchmark.py          # python -m okey.benchmark --games 1000 --seed 1
 ├── app/
-│   ├── streamlit_app.py      # giriş noktası + sayfa gezinmesi (Oyun / Strateji karşılaştırma)
+│   ├── streamlit_app.py      # giriş noktası + sayfa gezinmesi (Oyun / Detaylı / Strateji karşılaştırma)
 │   └── views/
-│       ├── game_page.py      # oyun sayfası
+│       ├── simple_page.py    # sade oyun ekranı (varsayılan): tek komut + Yaptım
+│       ├── game_page.py      # detaylı oyun sayfası
 │       ├── state.py          # st.session_state sarmalayıcısı
 │       ├── sidebar.py        # geri al, yeni oyun, kural ayarları
 │       ├── card_grid.py      # 3×8 tıklanabilir tablo + hızlı metin girişi
@@ -77,7 +78,8 @@ mt2-okey/
     ├── test_state.py         # tekrar kullanım engeli, sayım, terminal durum
     ├── test_session.py       # undo = önceki durum (eşitlik), replay tutarlılığı
     ├── test_board.py         # tıklama mantığı
-    ├── test_app.py           # Streamlit AppTest ile başsız uçtan uca arayüz testleri
+    ├── test_app.py           # detaylı sayfa: başsız uçtan uca arayüz testleri
+    ├── test_simple_page.py   # sade ekran: başsız uçtan uca testler
     ├── test_rules.py         # sandık sınıfları, sınır değerler 290/299/300/399/400
     ├── test_simulation.py    # tekrarsız dağıtım, CRN tekrarlanabilirliği
     ├── test_strategies.py    # greedy/seçici doğruluğu
