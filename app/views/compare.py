@@ -68,15 +68,24 @@ def _comparison_rows(report: dict) -> list[dict]:
     ]
 
 
+def _short(name: str) -> str:
+    """Eksen için kısa ad: 'Monte Carlo (N=100, devam: Açgözlü)' -> 'Monte Carlo N=100'."""
+    if name.startswith("Monte Carlo (N="):
+        return "Monte Carlo " + name.split("(", 1)[1].split(",", 1)[0]
+    return name
+
+
 def _rate_chart(report: dict, key: str, ci_key: str, title: str) -> alt.Chart:
-    names = [s["name"] for s in report["summaries"]]
+    names = [_short(s["name"]) for s in report["summaries"]]
+    upper = max(s[ci_key][1] for s in report["summaries"]) or 0.01
     data = [
         {
-            "Strateji": s["name"],
+            "Strateji": _short(s["name"]),
             "Oran": s[key],
             "Alt": s[ci_key][0],
             "Üst": s[ci_key][1],
             "Etiket": f"{_pct(s[key])} ({_pct(s[ci_key][0])}–{_pct(s[ci_key][1])})",
+            "Kısa": _pct(s[key]),
         }
         for s in report["summaries"]
     ]
@@ -85,40 +94,59 @@ def _rate_chart(report: dict, key: str, ci_key: str, title: str) -> alt.Chart:
         scale=alt.Scale(domain=names, range=[_color(n) for n in names]),
         legend=None,  # eksen etiketleri stratejiyi zaten adlandırır
     )
-    y = alt.Y("Strateji:N", sort=names, title=None)
+    y = alt.Y("Strateji:N", sort=names, title=None, axis=alt.Axis(labelLimit=160))
     tooltip = [alt.Tooltip("Strateji:N"), alt.Tooltip("Etiket:N", title=title)]
     base = alt.Chart(alt.Data(values=data))
     bars = base.mark_bar(cornerRadiusEnd=4, height=18).encode(
-        x=alt.X("Oran:Q", axis=alt.Axis(format="%", grid=True, gridOpacity=0.4), title=title),
+        # Sağda doğrudan etiketlere yer bırak.
+        x=alt.X("Oran:Q", axis=alt.Axis(format="%", grid=True, gridOpacity=0.4), title=title,
+                scale=alt.Scale(domain=[0, upper * 1.6], nice=False)),
         y=y,
         color=color,
         tooltip=tooltip,
     )
     ci = base.mark_rule(strokeWidth=2, color="#52514e").encode(x="Alt:Q", x2="Üst:Q", y=y, tooltip=tooltip)
-    labels = base.mark_text(align="left", dx=6, color="#52514e").encode(
-        x="Üst:Q", y=y, text="Etiket:N"
+    labels = base.mark_text(align="left", dx=6, color="#52514e", fontSize=11).encode(
+        x="Üst:Q", y=y, text="Kısa:N"
     )
     return (bars + ci + labels).properties(height=40 * len(names) + 20)
 
 
-def _score_chart(report: dict) -> alt.VConcatChart:
-    """Strateji başına bir puan histogramı (küçük çoklu grafikler) ve sandık eşikleri."""
-    names = list(report["scores"])
+BIN = 20
+MAX_SCORE = 600
+
+
+def _histogram(scores: list[int]) -> list[dict]:
+    """20 puanlık aralıklarda oyun payları (her aralık [başlangıç, başlangıç + 20))."""
+    counts = [0] * (MAX_SCORE // BIN + 1)
+    for score in scores:
+        counts[min(score, MAX_SCORE) // BIN] += 1
+    return [
+        # Çubuklar arasında küçük bir boşluk kalsın diye bitiş 2 puan önce.
+        {"Başlangıç": i * BIN, "Bitiş": (i + 1) * BIN - 2, "Pay": c / len(scores),
+         "Aralık": f"{i * BIN}–{(i + 1) * BIN - 10}"}
+        for i, c in enumerate(counts)
+        if c
+    ]
+
+
+def _score_charts(report: dict) -> list[alt.LayerChart]:
+    """Strateji başına bir puan histogramı (küçük çoklu grafikler, ortak x ekseni) ve eşikler."""
     rules = next((r for r in PRESETS.values() if r.name == report["rules"]), None)
+    x_scale = alt.Scale(domain=[0, MAX_SCORE], nice=False)
     charts = []
-    for name in names:
-        scores = report["scores"][name]
-        data = alt.Data(values=[{"Puan": v, "pay": 1 / len(scores)} for v in scores])
+    for name, scores in report["scores"].items():
         hist = (
-            alt.Chart(data)
+            alt.Chart(alt.Data(values=_histogram(scores)))
             .mark_bar(color=_color(name), cornerRadiusTopLeft=2, cornerRadiusTopRight=2)
             .encode(
-                x=alt.X("Puan:Q", bin=alt.Bin(step=20), title="Oyun sonu puanı",
-                        scale=alt.Scale(domain=[0, 600])),
-                y=alt.Y("sum(pay):Q", axis=alt.Axis(format="%", gridOpacity=0.4), title="Oyun payı"),
+                x=alt.X("Başlangıç:Q", scale=x_scale, title="Oyun sonu puanı"),
+                x2="Bitiş:Q",
+                y=alt.Y("Pay:Q", axis=alt.Axis(format="%", gridOpacity=0.4), title="Oyun payı"),
+                y2=alt.datum(0),
                 tooltip=[
-                    alt.Tooltip("Puan:Q", bin=alt.Bin(step=20), title="Puan aralığı"),
-                    alt.Tooltip("sum(pay):Q", format=".1%", title="Oyun payı"),
+                    alt.Tooltip("Aralık:N", title="Puan"),
+                    alt.Tooltip("Pay:Q", format=".1%", title="Oyun payı"),
                 ],
             )
         )
@@ -131,10 +159,10 @@ def _score_chart(report: dict) -> alt.VConcatChart:
             layers.append(
                 alt.Chart(marks)
                 .mark_rule(strokeDash=[4, 3], color="#52514e", strokeWidth=1.5)
-                .encode(x="x:Q", tooltip=["Eşik:N", alt.Tooltip("x:Q", title="Puan")])
+                .encode(x=alt.X("x:Q", scale=x_scale), tooltip=["Eşik:N", alt.Tooltip("x:Q", title="Puan")])
             )
-        charts.append(alt.layer(*layers).properties(height=120, width="container", title=name))
-    return alt.vconcat(*charts)
+        charts.append(alt.layer(*layers).properties(height=110, title=_short(name)))
+    return charts
 
 
 def _render_report(report: dict, label: str) -> None:
@@ -150,7 +178,8 @@ def _render_report(report: dict, label: str) -> None:
     c1.altair_chart(_rate_chart(report, "gold_rate", "gold_ci", "Altın sandık oranı"), width="stretch")
     c2.altair_chart(_rate_chart(report, "silver_rate", "silver_ci", "Gümüş sandık oranı"), width="stretch")
     st.markdown("**Puan dağılımı** (kesikli çizgiler: gümüş ve altın eşikleri)")
-    st.altair_chart(_score_chart(report), width="stretch")
+    for chart in _score_charts(report):
+        st.altair_chart(chart, width="stretch", height=210)
 
 
 def _run_live(n_games: int, seed: int, mc_n: int) -> None:
