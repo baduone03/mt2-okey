@@ -8,4 +8,15 @@ Uygulama oyuna bağlanmaz, oyun dosyalarını değiştirmez ve otomasyon yapmaz.
 - Mimari ve görev planı: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
 - Kurallar ve doğrulama durumu: [docs/RULES.md](docs/RULES.md)
 
-> Durum: tasarım aşaması. Kurulum ve çalıştırma talimatları ilk kod sürümüyle eklenecek.
+## Durum
+
+Kart modeli, kurallar ve puanlama motoru tamamlandı ve testleri yazıldı. Oyun durumu,
+arayüz ve stratejiler henüz yok (bkz. görev listesi).
+
+## Geliştirme
+
+```bash
+python -m venv .venv && source .venv/bin/activate
+pip install -e ".[dev]"
+pytest
+```

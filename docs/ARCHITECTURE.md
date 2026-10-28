@@ -83,8 +83,10 @@ bir işlemle cevaplanır: `combo.mask & hand == combo.mask`. Kullanıcıya dön�
 `Card(color, number)` nesneleriyle çalışır.
 
 **RuleConfig (frozen dataclass):**
-`hand_size=5`, `combo_size=3`, puan tabloları (liste), `chest_thresholds`,
-`discard_requires_no_combo`, `refill_policy`. Belirsiz kurallar burada yaşar.
+`hand_size=5`, puan tabloları (liste), `chest_thresholds`,
+`discard_requires_no_combo`, `refill_policy`. Belirsiz kurallar burada yaşar ve
+`UNVERIFIED_RULES` sözlüğüyle arayüze bildirilir. Üçlü boyutu (3) ve numara aralığı (1–8)
+sabittir.
 
 **GameState (frozen):**
 - `hand` (masadaki kartlar)
@@ -203,10 +205,10 @@ Her adım: kod + test + `pytest` yeşil. Test edilmeyen özellik "tamamlandı" s
 
 | # | Görev | Kabul ölçütü |
 |---|---|---|
-| 1.1 | `pyproject.toml`, paket iskeleti, pytest ayarı | `pytest` boş da olsa çalışır |
-| 1.2 | `cards.py`: Color, Card, indeks/bit dönüşümü, `parse()` | 24 benzersiz kart, gidiş-dönüş testleri |
-| 1.3 | `rules.py`: RuleConfig, OFFICIAL_2026, `chest_for()` | Sınır testleri: 0, 290, 299, 300, 399, 400 |
-| 1.4 | `combos.py`: 170 üçlü, sınıflandırma, puan | Sayılar 8/18/144; tüm puanlar tabloyla eşleşir; geçersiz üçlüler reddedilir |
+| 1.1 ✅ | `pyproject.toml`, paket iskeleti, pytest ayarı | `pytest` boş da olsa çalışır |
+| 1.2 ✅ | `cards.py`: Color, Card, indeks/bit dönüşümü, `parse()` | 24 benzersiz kart, gidiş-dönüş testleri |
+| 1.3 ✅ | `rules.py`: RuleConfig, OFFICIAL_2026, `chest_for()` | Sınır testleri: 0, 290, 299, 300, 399, 400 |
+| 1.4 ✅ | `combos.py`: 170 üçlü, sınıflandırma, puan | Sayılar 8/18/144; tüm puanlar tabloyla eşleşir; geçersiz üçlüler reddedilir |
 | 2.1 | `state.py`: GameState, eylemler, `apply()`, `legal_actions()` | Tekrar kullanım ve kayıp kart engellenir, sayım ve puan doğru güncellenir, terminal durum doğru belirlenir |
 | 3.1 | `session.py`: olay günlüğü, undo, replay | Undo sonrası durum öncekiyle eşit, rastgele olay dizilerinde tutarlılık |
 | 3.2 | Streamlit: kart tablosu + oyun paneli + geçmiş | Elle uçtan uca bir oyun girilebilir |
