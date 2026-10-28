@@ -233,6 +233,6 @@ Her adım: kod + test + `pytest` yeşil. Test edilmeyen özellik "tamamlandı" s
 | 4.3 ✅ | Arayüzde açgözlü öneri | — |
 | 5.1 ✅ | `stats.py` + `strategies/monte_carlo.py` | Küçük senaryolarda MC sıralaması ile kaba kuvvet sonucu tutarlı |
 | 5.2 ✅ | `advisor.py` + öneri tablosu (P, aralık, N, gerekçe) | — |
-| 6.1 | `benchmark.py` | Aynı başlangıç tohumlarıyla 3 strateji × ≥1000 oyun |
-| 6.2 | Karşılaştırma ekranı + `docs/BENCHMARKS.md` | Sonuçlar script çıktısından alınır |
+| 6.1 ✅ | `benchmark.py` | Aynı başlangıç tohumlarıyla 3 strateji × ≥1000 oyun |
+| 6.2 ✅ | Karşılaştırma ekranı + `docs/BENCHMARKS.md` | Sonuçlar script çıktısından alınır |
 | 7.x | Profil çıkar → erken eleme / önbellek / expectimax; README | Ölçülen hızlanma raporlanır |
