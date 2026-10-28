@@ -92,3 +92,9 @@ ALL_COMBOS: tuple[Combo, ...] = tuple(
 def combos_in(mask: int) -> list[Combo]:
     """Maskedeki kartlarla oluşturulabilen tüm geçerli üçlüler."""
     return [combo for combo in ALL_COMBOS if combo.mask & mask == combo.mask]
+
+
+# COMBOS_BY_CARD[i]: indeksi i olan kartı içeren tüm geçerli üçlüler.
+COMBOS_BY_CARD: tuple[tuple[Combo, ...], ...] = tuple(
+    tuple(combo for combo in ALL_COMBOS if combo.mask & card.bit) for card in ALL_CARDS
+)

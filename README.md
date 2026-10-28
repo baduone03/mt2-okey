@@ -11,8 +11,9 @@ Uygulama oyuna bağlanmaz, oyun dosyalarını değiştirmez ve otomasyon yapmaz.
 ## Durum
 
 Tamamlanan ve test edilenler: kart modeli, kurallar, puanlama motoru, oyun durumu,
-geri alınabilir hamle geçmişi ve elle kart girişi yapılan Streamlit arayüzü.
-Hamle önerileri (açgözlü ve Monte Carlo) henüz yok (bkz. görev listesi).
+geri alınabilir hamle geçmişi, elle kart girişi yapılan Streamlit arayüzü, rastgele ve
+açgözlü stratejiler, simülasyon altyapısı ve arayüzde açgözlü hamle önerisi.
+Monte Carlo optimizasyonu ve sandık olasılığı tahminleri henüz yok (bkz. görev listesi).
 
 ## Çalıştırma
 

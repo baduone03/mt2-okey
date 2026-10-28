@@ -98,3 +98,18 @@ def test_new_game(at):
     click(at, "K1 K2")
     at.sidebar.button[1].click().run()
     assert session(at).events == ()
+
+
+def test_recommendation_shown_and_selectable(at):
+    click(at, "K6 K7 K8 M7 S7")
+    headings = [m.value for m in at.markdown]
+    assert any("Önerilen hamle: Oyna K6-K7-K8 (+100)" in h for h in headings)
+    at.button(key="select_recommendation").click().run()
+    assert at.session_state["okey_selection"] == frozenset(parse_cards("K6 K7 K8"))
+    at.button(key="confirm_move").click().run()
+    assert session(at).state.score == 100
+
+
+def test_no_recommendation_while_entering_cards(at):
+    click(at, "K6 K7")
+    assert not any("Önerilen hamle" in m.value for m in at.markdown)

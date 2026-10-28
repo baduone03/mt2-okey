@@ -144,3 +144,14 @@ def test_custom_rules_change_score():
     assert score(parse_cards("K8 M8 S8"), rules) == 8
     assert score(parse_cards("M2 M3 M4"), rules) == 12
     assert score(parse_cards("M6 S7 M8"), rules) == 26
+
+
+def test_combos_by_card():
+    from okey.combos import COMBOS_BY_CARD
+
+    for card in ALL_CARDS:
+        expected = [c for c in ALL_COMBOS if card in c.cards]
+        assert list(COMBOS_BY_CARD[card.index]) == expected
+    # Kart 1 aynı numara üçlüsüne ve içinde yer aldığı her seri için 9 renk dizilimine girer.
+    assert len(COMBOS_BY_CARD[Card(R, 1).index]) == 1 + 9  # sadece 1-2-3 serisi
+    assert len(COMBOS_BY_CARD[Card(R, 4).index]) == 1 + 27  # 2-3-4, 3-4-5, 4-5-6

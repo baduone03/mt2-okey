@@ -15,7 +15,7 @@ except ModuleNotFoundError:  # paket kurulmadan doğrudan depodan çalıştırma
 
 import streamlit as st
 
-from views import card_grid, game_panel, history, sidebar
+from views import card_grid, game_panel, history, recommendations, sidebar
 from views import state as ui
 
 st.set_page_config(page_title="Metin2 Okey Asistanı", page_icon="🃏", layout="wide")
@@ -28,6 +28,7 @@ sidebar.render()
 game_panel.render_metrics()
 game_panel.render_phase_banner()
 card_grid.render()
+recommendations.render()
 game_panel.render_move_panel()
 game_panel.render_zones()
 history.render()

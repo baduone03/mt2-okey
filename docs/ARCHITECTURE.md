@@ -63,8 +63,8 @@ mt2-okey/
 │       ├── state.py          # st.session_state sarmalayıcısı
 │       ├── sidebar.py        # geri al, yeni oyun, kural ayarları
 │       ├── card_grid.py      # 3×8 tıklanabilir tablo + hızlı metin girişi
-│       ├── game_panel.py     # puan, kalan, atılan, görülmemiş
-│       ├── recommendations.py
+│       ├── game_panel.py     # puan, kalan, atılan, görülmemiş, hamle onayı
+│       ├── recommendations.py # öneri paneli (avantaj/dezavantaj)
 │       ├── history.py
 │       └── compare.py        # strateji karşılaştırma ekranı
 └── tests/
@@ -216,9 +216,9 @@ Her adım: kod + test + `pytest` yeşil. Test edilmeyen özellik "tamamlandı" s
 | 2.1 ✅ | `state.py`: GameState, eylemler, `apply()`, `legal_actions()` | Tekrar kullanım ve kayıp kart engellenir, sayım ve puan doğru güncellenir, terminal durum doğru belirlenir |
 | 3.1 ✅ | `session.py`: olay günlüğü, undo, replay | Undo sonrası durum öncekiyle eşit, rastgele olay dizilerinde tutarlılık |
 | 3.2 ✅ | Streamlit: kart tablosu + oyun paneli + geçmiş | Elle uçtan uca bir oyun girilebilir |
-| 4.1 | `strategies/greedy.py` + `random_policy.py` | Elle hesaplanmış senaryolarda doğru seçim |
-| 4.2 | `simulation.py`: `play_out`, CRN tohumları | Tekrarsız dağıtım, aynı tohum → aynı oyun |
-| 4.3 | Arayüzde açgözlü öneri | — |
+| 4.1 ✅ | `strategies/greedy.py` + `random_policy.py` | Elle hesaplanmış senaryolarda doğru seçim |
+| 4.2 ✅ | `simulation.py`: `play_out`, CRN tohumları | Tekrarsız dağıtım, aynı tohum → aynı oyun |
+| 4.3 ✅ | Arayüzde açgözlü öneri | — |
 | 5.1 | `stats.py` + `strategies/monte_carlo.py` | Küçük senaryolarda MC sıralaması ile kaba kuvvet sonucu tutarlı |
 | 5.2 | `advisor.py` + öneri tablosu (P, aralık, N, gerekçe) | — |
 | 6.1 | `benchmark.py` | Aynı başlangıç tohumlarıyla 3 strateji × ≥1000 oyun |
