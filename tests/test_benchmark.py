@@ -1,3 +1,6 @@
+import sys
+import types
+
 import pytest
 
 from okey.benchmark import (
@@ -27,7 +30,10 @@ def test_run_policy_uses_common_decks():
         assert r.seconds >= 0
 
 
-def test_parallel_matches_serial():
+def test_parallel_matches_serial(monkeypatch):
+    # Önceki testler (Streamlit AppTest) __main__'i değiştirebilir; alt süreçler onu
+    # yeniden içe aktarmasın diye temiz bir __main__ kullan.
+    monkeypatch.setitem(sys.modules, "__main__", types.ModuleType("__main__"))
     serial = run_policy(RandomPolicy(), RULES, 30, seed=8)
     parallel = run_policy(RandomPolicy(), RULES, 30, seed=8, workers=2)
     assert [r.score for r in serial] == [r.score for r in parallel]

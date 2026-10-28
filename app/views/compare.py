@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import json
-import os
 from pathlib import Path
 
 import altair as alt
@@ -167,9 +166,10 @@ def _run_live(n_games: int, seed: int, mc_n: int) -> None:
         finished[name] = done
         bar.progress(sum(finished.values()) / total, text=f"{name}: {done}/{n} oyun")
 
-    workers = max(1, min(4, os.cpu_count() or 1))
+    # Streamlit içinde tek süreç: alt süreçler __main__ olarak bu betiği yeniden çalıştırırdı.
+    # Büyük karşılaştırmalar için paralel CLI: python -m okey.benchmark --workers 4
     st.session_state[LIVE_REPORT] = run_benchmark(
-        policies, session_rules, n_games, seed, workers=workers, progress=progress
+        policies, session_rules, n_games, seed, workers=1, progress=progress
     )
     bar.empty()
 
@@ -196,7 +196,8 @@ def render() -> None:
     with tab_live:
         st.markdown(
             "Mevcut kural ayarlarıyla (kenar çubuğu → Oyun sayfası) küçük bir karşılaştırma "
-            "çalıştırır. Monte Carlo oyun başına yaklaşık N/100 saniye sürer."
+            "çalıştırır. Tek çekirdekte çalışır; Monte Carlo oyun başına yaklaşık N/100 saniye "
+            "sürer. Büyük karşılaştırmalar için: `python -m okey.benchmark --workers 4`."
         )
         with st.form("live_benchmark"):
             c1, c2, c3 = st.columns(3)

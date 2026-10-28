@@ -121,7 +121,12 @@ def run_policy(
     workers: int = 1,
     progress: Callable[[int, int], None] | None = None,
 ) -> list[GameResult]:
-    """Politikayı n_games oyunda oynatır; i'inci oyun her politikada aynı desteyi kullanır."""
+    """Politikayı n_games oyunda oynatır; i'inci oyun her politikada aynı desteyi kullanır.
+
+    workers > 1 alt süreç (spawn) kullanır. Alt süreçler __main__ modülünü yeniden içe
+    aktardığından, çağıran betik `if __name__ == "__main__":` korumasına sahip olmalıdır;
+    Streamlit gibi __main__'i değiştiren ortamlarda workers=1 kullanın.
+    """
     if n_games < 1:
         raise ValueError(f"Oyun sayısı en az 1 olmalı: {n_games}")
     chunk = max(1, min(50, n_games // max(1, workers * 4)))
