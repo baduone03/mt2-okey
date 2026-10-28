@@ -8,7 +8,7 @@ version = "0.1.0"
 description = "Metin2 Okey Kart Etkinliği için yerel hamle öneri asistanı"
 readme = "README.md"
 requires-python = ">=3.11"
-dependencies = ["streamlit>=1.30"]
+dependencies = ["streamlit>=1.50"]
 
 [project.optional-dependencies]
 dev = ["pytest>=8"]

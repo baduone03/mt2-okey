@@ -157,3 +157,26 @@ def test_session_equality_ignores_cache():
 
 def test_describe_discard():
     assert describe_action(Discard(parse_card("S8")), RULES) == "Atıldı: S8"
+
+
+def test_remove_draw_fixes_wrong_entry():
+    session = draw_all(GameSession(), "K1 K2 K3")
+    fixed = session.remove_draw(parse_card("K2"))
+    assert fixed == draw_all(GameSession(), "K1 K3")
+    assert fixed.state.unseen & parse_card("K2").bit
+
+
+def test_remove_draw_in_full_hand():
+    session = draw_all(GameSession(), "K3 K4 K5 M4 S8")
+    fixed = session.remove_draw(parse_card("S8")).draw(parse_card("S4"))
+    assert set(fixed.state.hand_cards) == set(parse_cards("K3 K4 K5 M4 S4"))
+
+
+def test_remove_draw_blocked_after_decision():
+    session = draw_all(GameSession(), "K3 K4 K5 M4 S8").discard(parse_card("S8"))
+    with pytest.raises(IllegalActionError, match="önce onları geri alın"):
+        session.remove_draw(parse_card("M4"))
+    with pytest.raises(IllegalActionError, match="kart girişi yok"):
+        session.remove_draw(parse_card("K1"))
+    later = session.draw(parse_card("K1"))
+    assert later.remove_draw(parse_card("K1")) == session

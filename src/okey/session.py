@@ -14,7 +14,16 @@ from dataclasses import dataclass, field
 from okey.cards import Card
 from okey.combos import make_combo
 from okey.rules import OFFICIAL_2026, RuleConfig
-from okey.state import Action, Discard, Draw, GameState, Phase, Play, apply
+from okey.state import (
+    Action,
+    Discard,
+    Draw,
+    GameState,
+    IllegalActionError,
+    Phase,
+    Play,
+    apply,
+)
 
 
 class NothingToUndoError(ValueError):
@@ -71,6 +80,22 @@ class GameSession:
         if not self.events:
             raise NothingToUndoError("Geri alınacak eylem yok.")
         return GameSession(self.rules, self.events[:-1], self.states[:-1])
+
+    def remove_draw(self, card: Card) -> GameSession:
+        """Yanlış girilmiş bir kartı masadan kaldırır.
+
+        Yalnızca kartın girilmesinden sonra sadece başka kart girişleri yapılmışsa
+        mümkündür; araya oynama/atma girdiyse önce onlar geri alınmalıdır.
+        """
+        try:
+            i = self.events.index(Draw(card))
+        except ValueError:
+            raise IllegalActionError(f"{card} için bir kart girişi yok.") from None
+        if any(not isinstance(e, Draw) for e in self.events[i + 1 :]):
+            raise IllegalActionError(
+                f"{card} girildikten sonra oynama/atma yapılmış; önce onları geri alın."
+            )
+        return GameSession(self.rules, self.events[:i] + self.events[i + 1 :])
 
     def new_game(self) -> GameSession:
         return GameSession(self.rules)
