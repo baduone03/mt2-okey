@@ -45,6 +45,16 @@ def render() -> None:
         c2.button("Yeni oyun", on_click=_new_game, width="stretch")
 
         st.header("Simülasyon")
+        st.radio(
+            "Yöntem",
+            options=["pimc", "mc"],
+            format_func={"pimc": "Kahin planı (önerilen)", "mc": "Monte Carlo"}.get,
+            key="advice_method",
+            help=(
+                "Kahin planı, ölçümlerde altın oranını en çok artıran yöntemdir "
+                "(docs/BENCHMARKS.md). Aşağıdaki ayarlar yalnızca Monte Carlo içindir."
+            ),
+        )
         st.select_slider(
             "Aday başına simülasyon",
             options=[100, 250, 500, 1000, 2000],

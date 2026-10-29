@@ -19,7 +19,6 @@ from views import state as ui
 from views.card_grid import COLOR_HEX, TEXT_ON_COLOR, render as render_grid
 from views.recommendations import get_advice
 
-SIMPLE_N = 300  # sade ekranda karar başına simülasyon (mobil/bulut için hızlı)
 CONFIRM_NEW = "okey_confirm_new"
 CHEST_TEXT = {Chest.BRONZE: "🥉 Bronz sandık", Chest.SILVER: "🥈 Gümüş sandık", Chest.GOLD: "🥇 Altın sandık"}
 
@@ -115,7 +114,7 @@ def render() -> None:
             sub = "Yanlış girdiğin karta tekrar dokunarak silebilirsin"
         _box("okey-wait", verb, "", sub)
     else:
-        advice = get_advice(SIMPLE_N)
+        advice = get_advice(method="pimc")
         best = advice.best
         highlight = frozenset(best.cards)
         chips = "".join(_chip(c) for c in best.cards)

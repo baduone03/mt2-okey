@@ -1,8 +1,9 @@
 """Hamle önerileri (arayüzden bağımsız).
 
 - `greedy_recommendation`: Strateji A (açgözlü), simülasyonsuz ve anında.
-- `recommend`: Strateji B (Monte Carlo); her aday hamle için sandık olasılıkları,
-  beklenen puan ve belirsizlik içerir. Sonuçlar kesin olasılık değil, tahmindir.
+- `recommend`: her aday hamle için sandık olasılıkları, beklenen puan ve belirsizlik.
+  Yöntem: "pimc" (kahin planları, varsayılan; altına en iyi oynayan) veya "mc"
+  (bir adım + devam stratejisi). Sonuçlar kesin olasılık değil, tahmindir.
 """
 
 from __future__ import annotations
@@ -17,9 +18,13 @@ from okey.state import Action, Discard, GameState, Phase, Play
 from okey.strategies.base import Policy
 from okey.strategies.greedy import GreedyPolicy, discard_potential, live_combos
 from okey.strategies.monte_carlo import CandidateEstimate, Evaluation, evaluate
+from okey.strategies.pimc import evaluate_pimc
 
 GREEDY_STRATEGY = "Açgözlü (Strateji A)"
 MC_STRATEGY = "Monte Carlo (Strateji B)"
+PIMC_STRATEGY = "Kahin planı (PIMC)"
+METHODS = ("pimc", "mc")
+DEFAULT_PIMC_SAMPLES = 20
 GREEDY_LIMITATION = "Açgözlü strateji yalnızca anlık puana bakar; gelecekte gelecek kartları hesaba katmaz."
 
 
@@ -134,15 +139,26 @@ def recommend(
     n_simulations: int = 500,
     seed: int | None = None,
     rollout: Policy | None = None,
+    method: str = "mc",
 ) -> Advice | None:
-    """Tüm aday hamleleri Monte Carlo ile değerlendirir; karar aşaması dışında None.
+    """Tüm aday hamleleri değerlendirir; karar aşaması dışında None.
 
-    `rollout`: adaydan sonra oyunun devamını oynayan politika (varsayılan: açgözlü).
+    - method="mc": `n_simulations` deste sırası, adaydan sonra `rollout` politikası
+      (varsayılan: açgözlü) ile devam.
+    - method="pimc": `n_simulations` deste sırası, her biri için kahin planı. Tahmini
+      olasılıklar iyimserdir; ölçümlerde altına en iyi oynayan yöntem budur.
     """
+    if method not in METHODS:
+        raise ValueError(f"Bilinmeyen yöntem: {method!r} (seçenekler: {METHODS})")
     if state.phase(rules) is not Phase.DECIDE:
         return None
     seed = decision_seed(state) if seed is None else seed
-    ev = evaluate(state, rules, n_simulations, seed, rollout)
+    if method == "pimc":
+        ev = evaluate_pimc(state, rules, n_simulations, seed)
+        strategy = PIMC_STRATEGY
+    else:
+        ev = evaluate(state, rules, n_simulations, seed, rollout)
+        strategy = MC_STRATEGY
     greedy_action = GreedyPolicy().choose(state, rules, random.Random(0))
     greedy_est = ev.estimate_for(greedy_action)
     best = ev.best
@@ -167,11 +183,11 @@ def recommend(
                     f"Açgözlü seçime ({greedy_action_title(greedy_action, rules)}) göre: {', '.join(parts)}."
                 )
         if tied and cand is not best:
-            cons.append("En iyi öneriden istatistiksel olarak ayırt edilemiyor; daha fazla simülasyonla netleşebilir.")
+            cons.append("En iyi öneriden ayırt edilemiyor; daha fazla simülasyonla netleşebilir.")
         recs.append(
             Recommendation(
                 action=cand.action,
-                strategy=MC_STRATEGY,
+                strategy=strategy,
                 immediate_points=cand.immediate_points,
                 pros=tuple(pros),
                 cons=tuple(cons),

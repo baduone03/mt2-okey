@@ -27,7 +27,8 @@ game_page.render()
 def at() -> AppTest:
     app = AppTest.from_string(SCRIPT, default_timeout=30).run()
     assert not app.exception
-    app.select_slider(key="mc_n").set_value(100).run()  # testleri hızlı tut
+    app.session_state["pimc_n"] = 4  # testleri hızlı tut
+    app.select_slider(key="mc_n").set_value(100).run()
     return app
 
 
@@ -112,6 +113,7 @@ def test_new_game(at):
 
 
 def test_recommendation_shown_and_selectable(at):
+    at.radio(key="advice_method").set_value("mc").run()
     click(at, "K6 K7 K8 M7 S7")
     headings = [m.value for m in at.markdown]
     assert any(h.startswith("#### Önerilen hamle:") for h in headings)
@@ -128,7 +130,16 @@ def test_no_recommendation_while_entering_cards(at):
     assert not any("Önerilen hamle" in m.value for m in at.markdown)
 
 
+def test_pimc_is_default_method(at):
+    click(at, "K3 K4 K5 M4 S8")
+    advice = next(iter(at.session_state["okey_advice_cache"].values()))
+    assert advice.evaluation.rollout_policy == "Kahin planı (PIMC)"
+    assert advice.best.estimate.n == 4
+    assert any("iyimser" in c.value for c in at.caption)
+
+
 def test_rollout_choice_changes_evaluation(at):
+    at.radio(key="advice_method").set_value("mc").run()
     click(at, "K3 K4 K5 M4 S8")
     advice = next(iter(at.session_state["okey_advice_cache"].values()))
     assert advice.evaluation.rollout_policy == "Açgözlü"

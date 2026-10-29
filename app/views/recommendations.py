@@ -4,12 +4,13 @@ from __future__ import annotations
 
 import streamlit as st
 
-from okey.advisor import Advice, Recommendation, recommend
+from okey.advisor import DEFAULT_PIMC_SAMPLES, Advice, Recommendation, recommend
 from okey.strategies import GreedyPolicy, SelectivePolicy
 
 from views import state as ui
 
 MC_N = "mc_n"
+METHOD = "advice_method"
 ROLLOUT = "mc_rollout"
 ROLLOUTS = {"greedy": GreedyPolicy(), "selective": SelectivePolicy()}
 _CACHE = "okey_advice_cache"
@@ -28,17 +29,26 @@ def _interval(ci: tuple[float, float]) -> str:
     return f"{_pct(ci[0])} – {_pct(ci[1])}"
 
 
-def get_advice(default_n: int = 500) -> Advice | None:
-    """Mevcut karar anı için öneriler (aynı durum için önbellekten)."""
+def get_advice(default_n: int = 500, method: str | None = None) -> Advice | None:
+    """Mevcut karar anı için öneriler (aynı durum için önbellekten).
+
+    Yöntem verilmezse kenar çubuğundaki seçim (varsayılan: PIMC) kullanılır.
+    """
     session = ui.session()
-    n = st.session_state.get(MC_N, default_n)
-    rollout_key = st.session_state.get(ROLLOUT, "greedy")
-    key = (session.state, session.rules, n, rollout_key)
+    method = method or st.session_state.get(METHOD, "pimc")
+    if method == "pimc":
+        # "pimc_n" arayüzde gösterilmez; testlerde hızlandırmak için kullanılır.
+        n, rollout_key = st.session_state.get("pimc_n", DEFAULT_PIMC_SAMPLES), None
+    else:
+        n = st.session_state.get(MC_N, default_n)
+        rollout_key = st.session_state.get(ROLLOUT, "greedy")
+    key = (session.state, session.rules, method, n, rollout_key)
     cache = st.session_state.setdefault(_CACHE, {})
     if key not in cache:
-        with st.spinner("Hesaplanıyor…"):
+        with st.spinner("Hesaplanıyor… (oyun başında birkaç saniye sürebilir)"):
             cache.clear()  # yalnızca son karar anını sakla
-            cache[key] = recommend(session.state, session.rules, n, rollout=ROLLOUTS[rollout_key])
+            rollout = ROLLOUTS[rollout_key] if rollout_key else None
+            cache[key] = recommend(session.state, session.rules, n, rollout=rollout, method=method)
     return cache[key]
 
 
@@ -73,7 +83,13 @@ def render() -> None:
                 st.markdown(f"- {text}")
         st.button("Öneriyi seç", key="select_recommendation", on_click=_select, args=(best,))
 
-    if ev.exact:
+    if best.strategy.startswith("Kahin"):
+        method = (
+            f"{ev.n_simulations} olası deste sırası; her biri için oyun sonuna kadar en iyi plan "
+            "(kahin) çözüldü. Olasılıklar iyimserdir: kahin gelecek kartları bildiği için "
+            "gerçek şanstan yüksek görünür. Hamleleri sıralamak için kullanılır."
+        )
+    elif ev.exact:
         method = (
             f"Kalan {ui.session().state.deck_remaining} kartın tüm {ev.n_simulations} sırası denendi; "
             f"sonuçlar devam stratejisine ({ev.rollout_policy}) göre kesindir."

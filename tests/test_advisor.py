@@ -112,3 +112,21 @@ def test_recommend_with_selective_rollout():
     advice = recommend(state, RULES, n_simulations=30, rollout=SelectivePolicy())
     assert advice.evaluation.rollout_policy == "Seçici (≥50)"
     assert {r.action for r in advice.recommendations} == set(legal_actions(state, RULES))
+
+
+def test_recommend_pimc_method():
+    from okey.advisor import PIMC_STRATEGY
+
+    state = endgame("K2 K4 M5 S2 S6", "K3 K8 S1 S7", 240)
+    advice = recommend(state, RULES, n_simulations=24, method="pimc")
+    assert advice.best.strategy == PIMC_STRATEGY
+    assert advice.best.action == Discard(parse_card("M5"))
+    assert {r.action for r in advice.recommendations} == set(legal_actions(state, RULES))
+    assert recommend(state, RULES, n_simulations=24, method="pimc") == advice
+
+
+def test_recommend_rejects_unknown_method():
+    import pytest
+
+    with pytest.raises(ValueError):
+        recommend(state_of("K3 K4 K5 M4 S8"), RULES, method="nope")
