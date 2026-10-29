@@ -224,6 +224,32 @@ eşleştirilmiş; oyun sonuna kadar kararlar aynı:
 Küçük ama iki kümede de tutarlı bir iyileşme. Hesabın doğruluğu, kural motoruyla
 yapılan bağımsız bir expectimax ile test ediliyor (`tests/test_endgame.py`).
 
+### 9. "Kart yakarak 8 bekleme" senaryosu
+
+**Gerçek oyun geri bildirimi:** Masada S6 S7 K6 K7 M2 gibi bir el varken sistem M2'yi ve
+ardından gelen kartları yakarak aynı renk 8'i (veya 5'i) bekliyor. Bazen eldeki karışık
+6-7-8 üçlüsünü (60) de oynamıyor.
+
+**Şüphe:** Tek adım ileri bakan MC'nin "erteleme hatası". Sistem her kararda gelecekteki
+kendisinin ilk üçlüyü oynayacağını varsayıyor, ama sonraki turda yine bekleyebiliyor.
+
+**Ölçüm (bu başlangıç elinden 300 farklı deste sırası, ürünle aynı sistem):**
+
+| Kural | Bronz | Altın | Ortalama | Bronz farkı | Altın farkı |
+|---|---|---|---|---|---|
+| Mevcut (bekler) | %18.0 | %22.0 | 344.3 | — | — |
+| Bekleme yalnızca 300+ şansı δ=0.03 artırırsa | %16.3 | %17.3 | 341.2 | −1.7 ± 2.0 | −4.7 ± 3.0 |
+| Bekleme yalnızca 300+ şansı δ=0.10 artırırsa | %17.7 | %17.0 | 340.0 | −0.3 ± 2.4 | −5.0 ± 3.5 |
+| Üçlü varsa hep hemen oyna | %23.7 | %16.0 | 334.5 | +5.7 ± 3.8 | −6.0 ± 3.8 |
+
+Bekleme bu durumda doğru strateji. Eldeki üçlüyü hemen oynamak bronz oranını artırıyor;
+ara kurallar bronzu anlamlı düşürmeden altını azaltıyor. Değişiklik yapılmadı.
+Bu el, sistemle oyunların %82'sinde 300'ü ve %22'sinde 400'ü geçiyor; genel ortalama
+sırasıyla %69 ve %7.
+
+**Ek ölçüm:** Kesin oyun sonu hesabının süresi kalan kart sayısıyla hızla artıyor: 9
+kartta ortalama 4.6 sn, 10 kartta 16 sn, 11 kartta 83 sn. Bu yüzden sınır 8'de kaldı.
+
 ## Yorum
 
 - **Monte Carlo açık ara en iyisi.** Aynı destelerde açgözlüye göre altın sandık
