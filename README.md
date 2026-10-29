@@ -44,8 +44,7 @@ Detaylı sayfa aynı oyunu şu ek bilgilerle gösterir:
 Kenar çubuğundan şunlar ayarlanır:
 - simülasyon sayısı;
 - devam stratejisi;
-- "üçlü varken kart atmak yasak" kuralı. Bu kural kaynaklarda net değil; oyunda
-  gözlemlediğine göre ayarla.
+- "üçlü varken kart atmak yasak" kuralı. Oyunda atılabildiği doğrulandı; kapalı kalmalı.
 
 ## Stratejiler ve ölçülen sonuçlar
 
@@ -81,12 +80,10 @@ python -m okey.benchmark --games 1000 --seed 2026 --mc-n 100 --workers 4
 
 - **Tahminler kesin değildir.** Gösterilen olasılıklar simülasyon tahminidir ve simüle
   edilen devam stratejisine bağlıdır.
-- **Bazı kurallar doğrulanmadı.** Bu kurallar yapılandırılabilir tutuldu; listesi ve
-  kaynakları [docs/RULES.md](docs/RULES.md) dosyasında. En önemlileri:
-  - masada üçlü varken kart atılabilir mi?
-  - puan tablosunun ara değerleri doğru mu?
-
-  Bunlar oyunda kontrol edilmelidir.
+- **Kurallar büyük ölçüde oyunda doğrulandı.** Deste boyutu, elle kart çekme, üçlü
+  varken kart atabilme ve örnek bir ara puan (karışık 3-4-5 = 30) oyunda doğrulandı.
+  Puan tablosunun diğer ara satırları +10 adım varsayımına dayanıyor. Ayrıntılar:
+  [docs/RULES.md](docs/RULES.md).
 
 ## Proje yapısı
 

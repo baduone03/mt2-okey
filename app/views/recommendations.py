@@ -100,8 +100,8 @@ def render() -> None:
             "Aralıklar %95 Wilson aralığıdır."
         )
     st.caption(
-        f"{method} Tahminler kesin olasılık değildir ve doğrulanmamış kural varsayımlarına "
-        "bağlıdır (kenar çubuğuna bakın)."
+        f"{method} Tahminler kesin olasılık değildir; puan tablosunun ara değerleri için "
+        "kenar çubuğundaki varsayımlara bakın."
     )
 
     rows = []

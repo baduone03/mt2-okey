@@ -86,8 +86,8 @@ def render() -> None:
             value=session.rules.discard_requires_no_combo,
             key="rules_strict_discard",
             on_change=_change_rules,
-            help="Resmî kaynaklarda net değil (docs/RULES.md A6). Oyunda kontrol edip ayarlayın.",
+            help="Oyunda doğrulandı: üçlü varken de kart atılabiliyor (docs/RULES.md A6). Kapalı kalmalı.",
         )
-        with st.expander("⚠️ Doğrulanmamış kurallar"):
+        with st.expander("Kural varsayımları"):
             for name, text in UNVERIFIED_RULES.items():
                 st.markdown(f"- `{name}`: {text}")

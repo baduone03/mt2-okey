@@ -91,10 +91,10 @@ OFFICIAL_2026 = RuleConfig(
 PRESETS: dict[str, RuleConfig] = {"official_2026": OFFICIAL_2026}
 
 # Kaynaklardan kesinleştirilemeyen kurallar; arayüz bunları kullanıcıya gösterir.
+# Oyun içinde doğrulananlar (RULES.md): üçlü varken atma serbest (A6), masa elle doldurulur
+# (A5), karışık seri 3-4-5 = 30 puan.
 UNVERIFIED_RULES: dict[str, str] = {
-    "discard_requires_no_combo": "Masada geçerli üçlü varken kart atılabilir mi? (RULES.md A6)",
-    "refill_policy": "Oynanan kartların yerine masa hemen 5'e tamamlanıyor mu? (RULES.md A5)",
-    "same_number_points": "Ara değerler (+10 adım) resmî tablodan satır satır doğrulanmadı.",
-    "same_color_run_points": "Ara değerler (+10 adım) resmî tablodan satır satır doğrulanmadı.",
-    "mixed_run_points": "Ara değerler (+10 adım) resmî tablodan satır satır doğrulanmadı.",
+    "same_number_points": "Uç değerler ve +10 adım varsayımı; ara satırlar tek tek doğrulanmadı.",
+    "same_color_run_points": "Uç değerler ve +10 adım varsayımı; ara satırlar tek tek doğrulanmadı.",
+    "mixed_run_points": "3-4-5 = 30 oyunda doğrulandı; diğer ara satırlar +10 adım varsayımı.",
 }

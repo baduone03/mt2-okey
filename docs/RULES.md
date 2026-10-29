@@ -30,7 +30,7 @@ Her kural üç durumdan birindedir:
 | A3 | Uygun kart yoksa bir kart sağ tıkla atılır | ✅ | Resmî wiki |
 | A4 | Oynanan/atılan kartlar desteye geri dönmez | 🟡 | Tüm kaynaklar ve 24 kartlık sayım bununla tutarlı |
 | A5 | Masa desteye tıklanarak **elle** doldurulur; birden fazla kart atıp sonra çekmek mümkündür | ✅ (oyun içi gözlem) | Model her hamleden sonra hemen çeker. Bu en iyi oyundur: kartlar birer birer atılıp hemen çekilirse sonraki karar daha fazla bilgiyle verilir; toplu atmanın avantajı yoktur (deste sırası değişmez). |
-| A6 | Kombinasyon **varken** de kart atılabilir mi? | 🟡 (oyun içi: her kartta X düğmesi var; üçlü varken etkin olduğu henüz görülmedi) | **Stratejiyi en çok etkileyen belirsizlik.** Resmî metin "uygun kart yoksa" der; arayüzün bunu zorlayıp zorlamadığı bilinmiyor. `discard_requires_no_combo` (varsayılan: `False`, yani her zaman atılabilir) |
+| A6 | Kombinasyon **varken** de kart atılabilir | ✅ (oyun içi: üçlü varken de X düğmeleri etkin) | **Stratejiyi en çok etkileyen belirsizlik.** Resmî metin "uygun kart yoksa" der; arayüzün bunu zorlayıp zorlamadığı bilinmiyor. `discard_requires_no_combo` (varsayılan: `False`, yani her zaman atılabilir) |
 | A7 | Oyun, deste bittiğinde ve masada oynanabilir üçlü kalmadığında biter | 🟡 (oyun içi: "Bitir" düğmesiyle istenince bitirilebilir; puan azalmadığı için strateji değişmez) | Atmanın puanı yoktur. Bu yüzden "masada kart kalsa da biter" ile "son kart atılınca biter" aynı skoru verir. Modelde terminal durum: `deste boş VE masada geçerli üçlü yok` |
 
 ## 3. Geçerli kombinasyonlar
@@ -60,7 +60,7 @@ Varsayılan değerler (`rules.py` içinde `OFFICIAL_2026` ön ayarı):
 | Durum | Kaynak |
 |---|---|
 | ✅ Uç değerler (20/90, 50/100, 10/60) | Resmî EN ve TR wiki alıntıları, topluluk tabloları |
-| 🟡 Aradaki değerlerin her adımda +10 arttığı | Topluluk tablolarında tutarlı. Resmî tablo satır satır okunamadı |
+| 🟡 Aradaki değerlerin her adımda +10 arttığı | Topluluk tablolarında tutarlı; karışık 3-4-5 = 30 oyunda doğrulandı. Diğer satırlar tek tek görülmedi |
 
 Puan tablosu **veri** olarak tutulur (formül değil): her kombinasyon tipi için 8 veya 6
 elemanlı bir liste. Farklı sunucular için yeni ön ayar eklemek tek satırdır.
@@ -81,10 +81,14 @@ Etkinlik sürümleri (Yaz / "Merry" kış) aynı eşikleri kullanıyor görünü
 
 Aşağıdakileri oyunda bir kez gözlemlemek modeli kesinleştirir:
 
-1. **(A6)** Masada geçerli bir üçlü varken X (atma) düğmeleri etkin mi?
-2. **(Puan)** Ara değerlerden biri, örneğin K3-M4-S5 için 30 puan veriliyor mu?
+Oyun içinde doğrulananlar:
+- K2: 5 kart açıkken destede 19 kart var.
+- A5: Masa elle doldurulur.
+- A6: Masada üçlü varken de kart atılabilir.
+- Puan tablosu ara değeri: karışık seri 3-4-5 = 30.
 
-Oyun içinde doğrulananlar: K2 (destede 19 kart), A5 (masa elle doldurulur).
+Hâlâ yalnızca varsayım olan: puan tablosunun diğer ara satırları (+10 adım). Uç değerler
+resmî kaynaklarda, 3-4-5 karışık seri oyunda doğrulandı.
 
 ## Kaynaklar
 
