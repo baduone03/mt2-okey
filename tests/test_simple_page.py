@@ -144,3 +144,12 @@ def test_simple_page_endgame_secures_silver(at):
     assert "AT" in texts(at)
     at.button(key="done").click().run()
     assert session(at).events[-1] == Discard(parse_card("M5"))
+
+
+def test_game_log_shown_and_parsable(at):
+    from okey.session import from_log
+
+    tap(at, "K3 K4 K5 M4 S8")
+    codes = [c.value for c in at.code]
+    assert codes and codes[0] == "+K3 +K4 +K5 +M4 +S8"
+    assert from_log(codes[0]) == session(at)

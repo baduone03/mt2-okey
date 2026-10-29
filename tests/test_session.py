@@ -180,3 +180,25 @@ def test_remove_draw_blocked_after_decision():
         session.remove_draw(parse_card("K1"))
     later = session.draw(parse_card("K1"))
     assert later.remove_draw(parse_card("K1")) == session
+
+
+def test_log_round_trip():
+    from okey.session import from_log, to_log
+
+    for seed in range(20):
+        session = _random_session(seed)
+        log = to_log(session)
+        assert from_log(log) == session
+    assert to_log(GameSession()) == ""
+    assert from_log("") == GameSession()
+
+
+def test_log_format_and_errors():
+    from okey.session import from_log, to_log
+
+    session = draw_all(GameSession(), "K3 K4 K5 M4 S8").play(parse_cards("K3 K4 K5")).draw(parse_card("K1"))
+    assert to_log(session) == "+K3 +K4 +K5 +M4 +S8 O:K3-K4-K5 +K1"
+    with pytest.raises(ValueError, match="Tanınmayan"):
+        from_log("+K1 X:K2")
+    with pytest.raises(ValueError, match="kurallara uymuyor"):
+        from_log("+K1 +K1")

@@ -33,6 +33,15 @@ Düzeltme ve diğer seçenekler:
 - Yanlış girdiğin karta tekrar dokunmak onu siler.
 - Önerilenden farklı bir şey yaptıysan "Başka bir hamle yaptım" bölümünden seç.
 - "Geri al" son adımı geri alır. "Yeni oyun" onay ister.
+- "Oyun kaydı" bölümü oyunu kopyalanabilir kısa bir metin olarak gösterir. Oyun
+  bitince kendiliğinden açılır. Bu kayıt analiz edilebilir:
+
+  ```bash
+  python -m okey.analyze "+K3 +K4 +K5 +M4 +S8 O:K3-K4-K5 ..."
+  ```
+
+  Analiz şunları gösterir: o destede kusursuz oyunun azami puanı (300 mümkün müydü?)
+  ve her karar anında yapılan hamle ile önerilen hamlenin 300+ şansı.
 
 ## Detaylı sayfa
 

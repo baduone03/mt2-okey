@@ -12,7 +12,7 @@ import streamlit as st
 from okey.board import cards_needed
 from okey.cards import Card
 from okey.rules import Chest
-from okey.session import NothingToUndoError
+from okey.session import NothingToUndoError, to_log
 from okey.state import Action, Phase, Play
 
 from views import state as ui
@@ -141,6 +141,15 @@ def render() -> None:
                 key="other_move",
             )
             st.button("Bunu yaptım", key="done_other", on_click=_other_move, args=(options,))
+
+    if session.events:
+        finished = phase is Phase.FINISHED
+        with st.expander("Oyun kaydı", expanded=finished):
+            st.caption(
+                "Bu kaydı kopyalayıp paylaşırsan oyun adım adım analiz edilebilir "
+                "(+ = gelen kart, O = oynanan üçlü, A = atılan kart)."
+            )
+            st.code(to_log(session), language=None, wrap_lines=True)
 
     c1, c2 = st.columns(2)
     c1.button("↶ Geri al", key="simple_undo", on_click=_undo, disabled=not session.can_undo, width="stretch")

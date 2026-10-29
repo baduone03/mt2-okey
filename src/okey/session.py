@@ -123,6 +123,39 @@ def _fold(events: Iterable[Action], rules: RuleConfig) -> tuple[GameState, ...]:
     return tuple(states)
 
 
+def to_log(session: GameSession) -> str:
+    """Oyunu paylaşılabilir kısa metne çevirir: "+K3" çekiş, "O:K3-K4-K5" oynama, "A:S8" atma."""
+    tokens = []
+    for action in session.events:
+        if isinstance(action, Draw):
+            tokens.append(f"+{action.card}")
+        elif isinstance(action, Play):
+            tokens.append(f"O:{action.combo}")
+        else:
+            tokens.append(f"A:{action.card}")
+    return " ".join(tokens)
+
+
+def from_log(text: str, rules: RuleConfig = OFFICIAL_2026) -> GameSession:
+    """`to_log` çıktısından oturumu yeniden kurar; hatalı kayıtta ValueError verir."""
+    from okey.cards import parse_card, parse_cards
+
+    session = GameSession(rules)
+    for token in text.split():
+        try:
+            if token.startswith("+"):
+                session = session.draw(parse_card(token[1:]))
+            elif token.startswith("O:"):
+                session = session.play(parse_cards(token[2:].replace("-", " ")))
+            elif token.startswith("A:"):
+                session = session.discard(parse_card(token[2:]))
+            else:
+                raise ValueError(f"Tanınmayan kayıt parçası: {token!r}")
+        except IllegalActionError as exc:
+            raise ValueError(f"Kayıt kurallara uymuyor ({token}): {exc}") from exc
+    return session
+
+
 def describe_action(action: Action, rules: RuleConfig) -> str:
     if isinstance(action, Draw):
         return f"Çekildi: {action.card}"
