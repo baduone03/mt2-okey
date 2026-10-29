@@ -18,6 +18,7 @@ from okey.state import Action, Discard, GameState, Phase, Play
 from okey.strategies.base import Policy
 from okey.strategies.greedy import GreedyPolicy, discard_potential, live_combos
 from okey.strategies.monte_carlo import CandidateEstimate, Evaluation, evaluate
+from okey.strategies.endgame import ENDGAME_CARDS, ENDGAME_NAME, evaluate_endgame
 from okey.strategies.pimc import evaluate_pimc
 
 GREEDY_STRATEGY = "Açgözlü (Strateji A)"
@@ -147,13 +148,20 @@ def recommend(
       (varsayılan: açgözlü) ile devam.
     - method="pimc": `n_simulations` deste sırası, her biri için kahin planı. Tahmini
       olasılıklar iyimserdir; ölçümlerde MC'den anlamlı farkı çıkmadı (deneysel).
+
+    Yöntemden bağımsız olarak destede `ENDGAME_CARDS` veya daha az kart kaldığında kesin
+    oyun sonu hesabı kullanılır.
     """
     if method not in METHODS:
         raise ValueError(f"Bilinmeyen yöntem: {method!r} (seçenekler: {METHODS})")
     if state.phase(rules) is not Phase.DECIDE:
         return None
     seed = decision_seed(state) if seed is None else seed
-    if method == "pimc":
+    if state.deck_remaining <= ENDGAME_CARDS:
+        # Oyun sonu: tahmin yerine kesin hesap (önce 300, sonra 400, sonra puan).
+        ev = evaluate_endgame(state, rules)
+        strategy = ENDGAME_NAME
+    elif method == "pimc":
         ev = evaluate_pimc(state, rules, n_simulations, seed)
         strategy = PIMC_STRATEGY
     else:

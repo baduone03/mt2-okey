@@ -90,7 +90,12 @@ def render() -> None:
                 st.markdown(f"- {text}")
         st.button("Öneriyi seç", key="select_recommendation", on_click=_select, args=(best,))
 
-    if best.strategy.startswith("Kahin"):
+    if getattr(est, "exact", False) and ev.n_simulations == 0:
+        method = (
+            f"Destede {ui.session().state.deck_remaining} kart kaldı: tüm olası kart gelişleri ve "
+            "her durumdaki en iyi hamle kesin olarak hesaplandı (önce 300, sonra 400, sonra puan)."
+        )
+    elif best.strategy.startswith("Kahin"):
         method = (
             f"{ev.n_simulations} olası deste sırası; her biri için oyun sonuna kadar en iyi plan "
             "(kahin) çözüldü. Olasılıklar iyimserdir: kahin gelecek kartları bildiği için "
@@ -107,8 +112,9 @@ def render() -> None:
             "Aralıklar %95 Wilson aralığıdır."
         )
     st.caption(
-        f"{method} Tahminler kesin olasılık değildir; puan tablosunun ara değerleri için "
-        "kenar çubuğundaki varsayımlara bakın."
+        f"{method} "
+        + ("" if getattr(est, "exact", False) and ev.n_simulations == 0 else "Tahminler kesin olasılık değildir; ")
+        + "puan tablosunun ara değerleri için kenar çubuğundaki varsayımlara bakın."
     )
 
     rows = []
@@ -124,7 +130,7 @@ def render() -> None:
                 "P(gümüş)": _pct(e.p_silver),
                 "Beklenen": f"{e.mean_score:.0f} ± {1.96 * e.score_se:.0f}",
                 "Medyan": f"{e.median_score:.0f}",
-                "N": e.n,
+                "N": "kesin" if getattr(e, "exact", False) else e.n,
                 "Not": ", ".join(
                     t
                     for t, on in (

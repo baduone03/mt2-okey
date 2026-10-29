@@ -187,6 +187,43 @@ Erken 8 atmaları belirgin biçimde azaldı; gümüş oranı ve ortalama puan k�
 anlamlı biçimde arttı; altına etkisi ölçülemedi. Uygulamanın varsayılan devam stratejisi
 artık budur. Eşikli varyant (en değerli üçlü + yalnız 50+ üçlüler) ek fayda göstermedi.
 
+### 8. "Düşük hedef 300" ve oyun sonu
+
+**Gerçek oyun geri bildirimi:** Sistem arada bir 290'da kalıyor. Hedef, en azından
+gümüşü (300) garantilemek.
+
+**Gümüş öncelikli karar kuralları (2 × 1.000 oyun, devam: açgözlü, en değerli üçlü):**
+
+| Kural − mevcut | Bronz farkı | Altın farkı |
+|---|---|---|
+| Önce 300, sonra 400, sonra puan | +0.1 ± 0.3 | −1.1 ± 0.5 |
+| Fayda (300 = 1, 400 = +0.5) | +1.8 ± 1.8 | −1.4 ± 0.8 |
+
+Bronz oranı düşmedi. Mevcut kural zaten fiilen gümüşü öne alıyor: altın olasılıkları
+küçük olduğu için aradaki farklar nadiren anlamlı çıkıyor. Bu kurallar altını azalttığı
+için benimsenmedi.
+
+**Diğer denemeler:**
+- Kart değeri sezgisel varyantları (5.000 oyun): ek iyileşme yok.
+- İç içe MC (200 oyun, devamı küçük bir MC oynuyor): bronz farkı +2.0 ± 7.1, iyileşme yok.
+
+Farklı ve giderek güçlenen dört yöntem de yaklaşık %30 bronzda buluşuyor. Bu, oyunların
+yaklaşık üçte birinde kartların 300'e yetmemesinin büyük ölçüde şans olduğunu
+düşündürüyor.
+
+**Kesin oyun sonu hesabı (benimsendi):** Destede ≤ 8 kart kalınca expectimax ile kesin
+hesap yapılıyor; amaç önce P(≥300), sonra P(≥400), sonra beklenen puan. 1.000'er oyun,
+eşleştirilmiş; oyun sonuna kadar kararlar aynı:
+
+| | Tohum 2026 | Tohum 7 | Birleşik (2.000 oyun) |
+|---|---|---|---|
+| Bronz farkı | −0.2 ± 0.7 | −1.5 ± 0.9 | **−0.9 ± 0.6** |
+| Altın farkı | +0.3 ± 0.5 | +0.0 ± 0.0 | +0.1 ± 0.3 |
+| Ortalama puan farkı | +5.1 ± 0.9 | +5.2 ± 0.9 | **+5.2 ± 0.6** |
+
+Küçük ama iki kümede de tutarlı bir iyileşme. Hesabın doğruluğu, kural motoruyla
+yapılan bağımsız bir expectimax ile test ediliyor (`tests/test_endgame.py`).
+
 ## Yorum
 
 - **Monte Carlo açık ara en iyisi.** Aynı destelerde açgözlüye göre altın sandık

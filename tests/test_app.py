@@ -148,3 +148,20 @@ def test_rollout_choice_changes_evaluation(at):
     at.radio(key="mc_rollout").set_value("selective").run()
     advice = next(iter(at.session_state["okey_advice_cache"].values()))
     assert advice.evaluation.rollout_policy == "Seçici (≥50)"
+
+
+def test_endgame_shows_exact_calculation(at):
+    from okey.cards import FULL_MASK, mask_of
+    from okey.session import GameSession
+    from okey.state import GameState
+
+    hand = mask_of(parse_cards("K2 K4 M5 S2 S6"))
+    unseen = mask_of(parse_cards("K3 K8 S1 S7"))
+    state = GameState(hand=hand, discarded=FULL_MASK & ~hand & ~unseen, score=240)
+    at.session_state["okey_session"] = GameSession(session(at).rules, (), (state,))
+    at.run()
+    assert not at.exception
+    advice = next(iter(at.session_state["okey_advice_cache"].values()))
+    assert advice.evaluation.rollout_policy == "Kesin oyun sonu hesabı"
+    assert any("kesin olarak hesaplandı" in c.value for c in at.caption)
+    assert "Önerilen hamle: At M5" in " ".join(m.value for m in at.markdown)

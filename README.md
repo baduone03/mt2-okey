@@ -56,7 +56,9 @@ Kenar çubuğundan şunlar ayarlanır:
 | Monte Carlo | Her hamleyi aynı rastgele deste sıralarıyla sonuna kadar simüle eder; önce altın, sonra gümüş olasılığına, sonra beklenen puana bakar. |
 | Kahin planı (PIMC, deneysel) | Gelecek kartların 20 olası sırasını örnekler, her biri için oyun sonuna kadar en iyi planı çözer ve 400'e en çok ulaşan hamleyi seçer. |
 
-Uygulamanın varsayılan yöntemi Monte Carlo'dur. Kahin planı iki bağımsız ölçümde Monte
+Uygulamanın varsayılan yöntemi Monte Carlo'dur. Destede 8 veya daha az kart kaldığında
+sistem tahmin yerine **kesin oyun sonu hesabı** yapar: her olası kart gelişi için en iyi
+hamleyi bulur ve önce 300'ü garantilemeye çalışır. Kahin planı iki bağımsız ölçümde Monte
 Carlo'dan anlamlı biçimde farklı çıkmadı; Detaylı sayfada seçilebilir. Deste sırasını
 önceden bilen kusursuz bir oyuncu bile bu kurallarla yaklaşık %30 altın alabiliyor.
 

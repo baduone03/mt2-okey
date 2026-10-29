@@ -1,3 +1,5 @@
+import pytest
+
 from okey.advisor import GREEDY_LIMITATION, greedy_recommendation
 from okey.cards import mask_of, parse_card, parse_cards
 from okey.combos import make_combo
@@ -72,20 +74,27 @@ def test_recommend_none_outside_decision_phase():
 
 
 def test_recommend_beats_greedy_in_silver_trap():
+    from okey.strategies.endgame import ENDGAME_NAME
+
+    # Destede 4 kart: kesin oyun sonu hesabı kullanılır.
     state = endgame("K2 K4 M5 S2 S6", "K3 K8 S1 S7", 240)
     advice = recommend(state, RULES, n_simulations=100)
     best = advice.best
-    assert best.strategy == MC_STRATEGY
+    assert best.strategy == ENDGAME_NAME
     assert best.action == Discard(parse_card("M5"))
     assert not best.is_greedy_choice
-    assert best.estimate.p_silver_or_better == 1.0
-    assert any(
-        "Açgözlü seçime (K4-M5-S6, +40) göre:" in p and "%0.0 → %100.0" in p and "290 → " in p
-        for p in best.pros
-    )
+    assert best.estimate.p_silver_or_better == pytest.approx(1.0)
     greedy = [r for r in advice.recommendations if r.is_greedy_choice]
     assert len(greedy) == 1 and greedy[0].action == Play(make_combo(parse_cards("K4 M5 S6")))
+    assert greedy[0].estimate.p_silver_or_better < 1.0
+    assert any("Açgözlü seçime (K4-M5-S6, +40) göre:" in p for p in best.pros)
     assert advice.evaluation.exact
+
+
+def test_recommend_uses_monte_carlo_before_endgame():
+    state = state_of("K3 K4 K5 M4 S8")  # destede 19 kart
+    advice = recommend(state, RULES, n_simulations=20)
+    assert advice.best.strategy == MC_STRATEGY
 
 
 def test_recommend_covers_all_legal_actions_and_is_reproducible():
@@ -117,12 +126,11 @@ def test_recommend_with_selective_rollout():
 def test_recommend_pimc_method():
     from okey.advisor import PIMC_STRATEGY
 
-    state = endgame("K2 K4 M5 S2 S6", "K3 K8 S1 S7", 240)
-    advice = recommend(state, RULES, n_simulations=24, method="pimc")
+    state = state_of("K3 K4 K5 M4 S8")  # destede 19 kart: oyun sonu değil
+    advice = recommend(state, RULES, n_simulations=4, method="pimc")
     assert advice.best.strategy == PIMC_STRATEGY
-    assert advice.best.action == Discard(parse_card("M5"))
     assert {r.action for r in advice.recommendations} == set(legal_actions(state, RULES))
-    assert recommend(state, RULES, n_simulations=24, method="pimc") == advice
+    assert recommend(state, RULES, n_simulations=4, method="pimc") == advice
 
 
 def test_recommend_rejects_unknown_method():

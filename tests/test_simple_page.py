@@ -129,3 +129,18 @@ def test_simple_page_uses_max_value_rollout(at):
     advice = next(iter(at.session_state["okey_advice_cache"].values()))
     assert advice.evaluation.rollout_policy == "Açgözlü (en değerli üçlü)"
     assert advice.best.estimate.n == 60
+
+
+def test_simple_page_endgame_secures_silver(at):
+    from okey.cards import FULL_MASK, mask_of
+    from okey.session import GameSession
+    from okey.state import GameState
+
+    hand = mask_of(parse_cards("K2 K4 M5 S2 S6"))
+    unseen = mask_of(parse_cards("K3 K8 S1 S7"))
+    state = GameState(hand=hand, discarded=FULL_MASK & ~hand & ~unseen, score=240)
+    at.session_state["okey_session"] = GameSession(session(at).rules, (), (state,))
+    at.run()
+    assert "AT" in texts(at)
+    at.button(key="done").click().run()
+    assert session(at).events[-1] == Discard(parse_card("M5"))
