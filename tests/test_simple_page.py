@@ -122,3 +122,10 @@ def test_used_card_tap_warns(at):
     at.run()
     tap(at, "K6")
     assert "Geri al" in at.warning[0].value
+
+
+def test_simple_page_uses_max_value_rollout(at):
+    tap(at, "K3 K4 K5 M4 S8")
+    advice = next(iter(at.session_state["okey_advice_cache"].values()))
+    assert advice.evaluation.rollout_policy == "Açgözlü (en değerli üçlü)"
+    assert advice.best.estimate.n == 60

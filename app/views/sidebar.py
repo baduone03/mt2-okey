@@ -64,12 +64,17 @@ def render() -> None:
         )
         st.radio(
             "Devam stratejisi",
-            options=["greedy", "selective"],
-            format_func={"greedy": "Açgözlü", "selective": "Seçici (≥50)"}.get,
+            options=["greedy_max", "greedy", "selective"],
+            format_func={
+                "greedy_max": "Açgözlü, en değerli üçlü (önerilen)",
+                "greedy": "Açgözlü, toplam değer",
+                "selective": "Seçici (≥50)",
+            }.get,
             key="mc_rollout",
             help=(
                 "Her aday hamleden sonra oyunun devamı bu stratejiyle simüle edilir. "
-                "Ölçümlerde ikisi arasında anlamlı fark bulunmadı (docs/BENCHMARKS.md)."
+                "Önerilen seçenek, 2.000 oyunda gümüş oranını ve ortalama puanı artırdı ve "
+                "erken 8 atmalarını yarıdan fazla azalttı (docs/BENCHMARKS.md)."
             ),
         )
 

@@ -12,7 +12,14 @@ from views import state as ui
 MC_N = "mc_n"
 METHOD = "advice_method"
 ROLLOUT = "mc_rollout"
-ROLLOUTS = {"greedy": GreedyPolicy(), "selective": SelectivePolicy()}
+# Varsayılan "greedy_max": atılacak kartı en değerli üçlüsüne göre seçen açgözlü devam;
+# erken 8 atmalarını yarıdan fazla azaltır (docs/BENCHMARKS.md, bölüm 7).
+ROLLOUTS = {
+    "greedy_max": GreedyPolicy(use_max=True),
+    "greedy": GreedyPolicy(),
+    "selective": SelectivePolicy(),
+}
+DEFAULT_ROLLOUT = "greedy_max"
 _CACHE = "okey_advice_cache"
 
 
@@ -41,7 +48,7 @@ def get_advice(default_n: int = 500, method: str | None = None) -> Advice | None
         n, rollout_key = st.session_state.get("pimc_n", DEFAULT_PIMC_SAMPLES), None
     else:
         n = st.session_state.get(MC_N, default_n)
-        rollout_key = st.session_state.get(ROLLOUT, "greedy")
+        rollout_key = st.session_state.get(ROLLOUT, DEFAULT_ROLLOUT)
     key = (session.state, session.rules, method, n, rollout_key)
     cache = st.session_state.setdefault(_CACHE, {})
     if key not in cache:

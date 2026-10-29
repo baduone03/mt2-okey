@@ -141,6 +141,9 @@ def test_pimc_can_be_selected(at):
 def test_rollout_choice_changes_evaluation(at):
     click(at, "K3 K4 K5 M4 S8")
     advice = next(iter(at.session_state["okey_advice_cache"].values()))
+    assert advice.evaluation.rollout_policy == "Açgözlü (en değerli üçlü)"
+    at.radio(key="mc_rollout").set_value("greedy").run()
+    advice = next(iter(at.session_state["okey_advice_cache"].values()))
     assert advice.evaluation.rollout_policy == "Açgözlü"
     at.radio(key="mc_rollout").set_value("selective").run()
     advice = next(iter(at.session_state["okey_advice_cache"].values()))

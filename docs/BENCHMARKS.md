@@ -161,6 +161,32 @@ doğruluğu, küçük oyun sonlarında kaba kuvvet aramayla test edildi (`tests/
 
 Bu bölümdeki deney betikleri depoya eklenmedi. Sonuçlar ve yöntem burada belgelendi.
 
+### 7. Erken 8 atma sorunu ve "en değerli üçlü" kart değeri
+
+**Gözlem (gerçek oyun):** Sistem bazen oyunun 2.–3. çekişinde 8 atmayı öneriyordu.
+
+**Neden:** Devam simülasyonu, atılacak kartı "hâlâ kurulabilir üçlülerinin toplam
+puanı en düşük olan" diye seçiyordu. 8 yalnızca 6-7-8 serilerine ve 8-8-8'e girebildiği
+için toplamı düşük kalıyor (670). Oysa bu üçlüler en değerlileri (100 ve 90 puan).
+Örneğin 5'in toplamı 1.260.
+
+**Değişiklik:** Kartın değeri, girebileceği **en değerli üçlünün** puanı olarak
+hesaplanıyor (`GreedyPolicy(use_max=True)`). Tek başına açgözlü oyunda (5.000 oyun,
+tohum 777) gümüş-veya-üstü %24.0'dan %29.6'ya, ortalama 259'dan 268'e çıktı.
+
+**MC'nin devam stratejisi olarak (N=100, 1.000'er oyun, eşleştirilmiş):**
+
+| | Tohum 2026 | Tohum 7 | Birleşik (2.000 oyun) |
+|---|---|---|---|
+| Oyunun başındaki atmalarda 8 sayısı (mevcut → yeni) | 107 → 45 | 120 → 54 | yarıdan fazla azaldı |
+| Altın farkı | +0.9 ± 1.3 | −0.4 ± 1.3 | +0.2 ± 0.9 |
+| Gümüş-veya-üstü farkı | +2.6 ± 2.4 | +1.2 ± 2.3 | **+1.9 ± 1.7** |
+| Ortalama puan farkı | +1.9 ± 2.1 | +1.6 ± 2.1 | **+1.8 ± 1.5** |
+
+Erken 8 atmaları belirgin biçimde azaldı; gümüş oranı ve ortalama puan küçük ama
+anlamlı biçimde arttı; altına etkisi ölçülemedi. Uygulamanın varsayılan devam stratejisi
+artık budur. Eşikli varyant (en değerli üçlü + yalnız 50+ üçlüler) ek fayda göstermedi.
+
 ## Yorum
 
 - **Monte Carlo açık ara en iyisi.** Aynı destelerde açgözlüye göre altın sandık

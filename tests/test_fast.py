@@ -109,3 +109,30 @@ def test_selective_zero_threshold_is_greedy():
         assert sel.choose(state, RULES, random.Random(0)) == greedy.choose(state, RULES, random.Random(0))
         order = deck_order(state.unseen, 66, k)
         assert sel.rollout_score(state, RULES, order, None) == greedy.rollout_score(state, RULES, order, None)
+
+
+# --- En değerli üçlüye göre atma ---
+
+
+@pytest.mark.parametrize("rules", [RULES, ODD, STRICT], ids=["official", "odd", "strict"])
+@pytest.mark.parametrize("min_points", [0, 50])
+def test_max_value_fast_rollout_equals_reference(rules, min_points):
+    policy = SelectivePolicy(min_points, use_max=True) if min_points else GreedyPolicy(use_max=True)
+    for k, state in enumerate(random_states(150, rules, seed=21 + min_points)):
+        order = deck_order(state.unseen, 71, k)
+        reference = play_out(state, rules, policy, order, random.Random(0)).score
+        assert policy.rollout_score(state, rules, order, random.Random(0)) == reference
+
+
+def test_max_value_keeps_high_card():
+    from okey.cards import mask_of, parse_card, parse_cards
+    from okey.state import Discard
+    from okey.strategies.greedy import discard_potential
+
+    state = GameState(hand=mask_of(parse_cards("K8 K7 M3 S4 M1")))
+    # Toplam değerde 8 (yalnızca 6-7-8 ve 8-8-8) düşük kalır; en değerli üçlüsü ise 100.
+    assert discard_potential(state, parse_card("K8"), RULES, use_max=True) == 100
+    action = GreedyPolicy(use_max=True).choose(state, RULES, random.Random(0))
+    assert action != Discard(parse_card("K8"))
+    assert GreedyPolicy(use_max=True).name != GreedyPolicy().name
+    assert GreedyPolicy.name == "Açgözlü"

@@ -24,11 +24,12 @@ DEFAULT_MIN_POINTS = 50
 
 
 class SelectivePolicy:
-    def __init__(self, min_points: int = DEFAULT_MIN_POINTS) -> None:
+    def __init__(self, min_points: int = DEFAULT_MIN_POINTS, use_max: bool = False) -> None:
         if min_points < 0:
             raise ValueError(f"Eşik negatif olamaz: {min_points}")
+        self.use_max = use_max
         self.min_points = min_points
-        self.name = f"Seçici (≥{min_points})"
+        self.name = f"Seçici (≥{min_points}{', en değerli üçlü' if use_max else ''})"
 
     def choose(self, state: GameState, rules: RuleConfig, rng: random.Random) -> Action:
         if state.phase(rules) is not Phase.DECIDE:
@@ -38,7 +39,7 @@ class SelectivePolicy:
             combo.points(rules) >= self.min_points or not state.unseen or not can_discard(state, rules)
         ):
             return Play(combo)
-        return Discard(least_useful_card(state, rules, self.min_points))
+        return Discard(least_useful_card(state, rules, self.min_points, self.use_max))
 
     def rollout_score(
         self, state: GameState, rules: RuleConfig, order: Sequence[Card], rng: random.Random
@@ -51,4 +52,5 @@ class SelectivePolicy:
             fast.tables(rules, self.min_points),
             self.min_points,
             rules.discard_requires_no_combo,
+            self.use_max,
         )

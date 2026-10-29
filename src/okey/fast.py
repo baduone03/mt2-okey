@@ -56,8 +56,12 @@ def best_combo(hand: int, t: Tables) -> tuple[int, int] | None:
     return None
 
 
-def least_useful(hand: int, available: int, t: Tables) -> int:
-    """Masadaki kartlardan, hâlâ kurulabilir üçlülerinin toplam puanı en düşük olanın biti."""
+def least_useful(hand: int, available: int, t: Tables, use_max: bool = False) -> int:
+    """Masadaki kartlardan geleceğe en az katkısı olanın biti.
+
+    Kartın değeri, hâlâ kurulabilir üçlülerinin toplam puanıdır; `use_max` ise en değerli
+    üçlüsünün puanıdır (8 gibi az ama yüksek puanlı üçlüye giren kartları korur).
+    """
     best_key = None
     best_bit = 0
     rest = hand
@@ -68,7 +72,11 @@ def least_useful(hand: int, available: int, t: Tables) -> int:
         potential = 0
         for mask, points in t.card_combos[idx]:
             if mask & available == mask:
-                potential += points
+                if use_max:
+                    if points > potential:
+                        potential = points
+                else:
+                    potential += points
         key = (potential, t.card_rank[idx])
         if best_key is None or key < best_key:
             best_key, best_bit = key, bit
@@ -82,6 +90,7 @@ def rollout(
     t: Tables,
     min_points: int = 0,
     discard_requires_no_combo: bool = False,
+    use_max: bool = False,
 ) -> int:
     """Seçici politika ile oyunu sonuna kadar oynar ve oyun sonu puanını döndürür.
 
@@ -89,6 +98,7 @@ def rollout(
     varken atmaya izin vermiyorsa) oynanır; aksi halde en az işe yarayan kart atılır.
     `min_points = 0` açgözlü politikadır. `order`: görülmemiş kartların bitleri,
     çekilme sırasıyla. `t`, aynı `min_points` ile üretilmiş tablolar olmalıdır.
+    `use_max`: atılacak kartı en değerli üçlüsüne göre seç (bkz. `least_useful`).
     """
     rest = 0
     for bit in order:
@@ -106,7 +116,7 @@ def rollout(
             hand &= ~combo[0]
             score += combo[1]
         elif i < n:
-            hand &= ~least_useful(hand, hand | rest, t)
+            hand &= ~least_useful(hand, hand | rest, t, use_max)
         else:
             return score
 
