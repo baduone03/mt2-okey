@@ -16,7 +16,7 @@ APP = str(Path(__file__).resolve().parent.parent / "app" / "streamlit_app.py")
 @pytest.fixture
 def at() -> AppTest:
     app = AppTest.from_file(APP, default_timeout=60)
-    app.session_state["pimc_n"] = 4  # testleri hızlı tut
+    app.session_state["mc_n"] = 60  # testleri hızlı tut (sade ekran mc_n'yi okur)
     app.run()
     assert not app.exception
     return app

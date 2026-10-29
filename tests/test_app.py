@@ -113,7 +113,6 @@ def test_new_game(at):
 
 
 def test_recommendation_shown_and_selectable(at):
-    at.radio(key="advice_method").set_value("mc").run()
     click(at, "K6 K7 K8 M7 S7")
     headings = [m.value for m in at.markdown]
     assert any(h.startswith("#### Önerilen hamle:") for h in headings)
@@ -130,7 +129,8 @@ def test_no_recommendation_while_entering_cards(at):
     assert not any("Önerilen hamle" in m.value for m in at.markdown)
 
 
-def test_pimc_is_default_method(at):
+def test_pimc_can_be_selected(at):
+    at.radio(key="advice_method").set_value("pimc").run()
     click(at, "K3 K4 K5 M4 S8")
     advice = next(iter(at.session_state["okey_advice_cache"].values()))
     assert advice.evaluation.rollout_policy == "Kahin planı (PIMC)"
@@ -139,7 +139,6 @@ def test_pimc_is_default_method(at):
 
 
 def test_rollout_choice_changes_evaluation(at):
-    at.radio(key="advice_method").set_value("mc").run()
     click(at, "K3 K4 K5 M4 S8")
     advice = next(iter(at.session_state["okey_advice_cache"].values()))
     assert advice.evaluation.rollout_policy == "Açgözlü"

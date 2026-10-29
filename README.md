@@ -55,12 +55,11 @@ Kenar çubuğundan şunlar ayarlanır:
 | Açgözlü | En yüksek anlık puanlı üçlüyü oynar; üçlü yoksa en az işe yarayan kartı atar. |
 | Seçici (≥50) | Destede kart varken yalnızca 50+ puanlı üçlüleri oynar, diğer durumlarda kart atar. |
 | Monte Carlo | Her hamleyi aynı rastgele deste sıralarıyla sonuna kadar simüle eder; önce altın, sonra gümüş olasılığına, sonra beklenen puana bakar. |
-| **Kahin planı (PIMC)** | Gelecek kartların 20 olası sırasını örnekler. Her biri için oyun sonuna kadar en iyi planı çözer ve 400'e en çok ulaşan hamleyi seçer. **Uygulamanın varsayılan yöntemi.** |
+| Kahin planı (PIMC, deneysel) | Gelecek kartların 20 olası sırasını örnekler, her biri için oyun sonuna kadar en iyi planı çözer ve 400'e en çok ulaşan hamleyi seçer. |
 
-Kahin planı, aynı 300 destede altın oranını mevcut Monte Carlo yönteminin %6,0'ından
-%10,7'ye çıkardı (eşleştirilmiş fark +4,7 ± 2,9 puan); gümüş oranı aynı kaldı (%70).
-Deste sırasını önceden bilen kusursuz bir oyuncunun tavanı bu destelerde yaklaşık %30
-altın.
+Uygulamanın varsayılan yöntemi Monte Carlo'dur. Kahin planı iki bağımsız ölçümde Monte
+Carlo'dan anlamlı biçimde farklı çıkmadı; Detaylı sayfada seçilebilir. Deste sırasını
+önceden bilen kusursuz bir oyuncu bile bu kurallarla yaklaşık %30 altın alabiliyor.
 
 1.000 oyunluk ölçüm, her strateji aynı desteleri oynadı (tohum 2026):
 

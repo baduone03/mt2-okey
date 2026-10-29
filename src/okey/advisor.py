@@ -2,8 +2,8 @@
 
 - `greedy_recommendation`: Strateji A (açgözlü), simülasyonsuz ve anında.
 - `recommend`: her aday hamle için sandık olasılıkları, beklenen puan ve belirsizlik.
-  Yöntem: "pimc" (kahin planları, varsayılan; altına en iyi oynayan) veya "mc"
-  (bir adım + devam stratejisi). Sonuçlar kesin olasılık değil, tahmindir.
+  Yöntem: "mc" (bir adım + devam stratejisi, varsayılan) veya "pimc" (kahin planları,
+  deneysel). Sonuçlar kesin olasılık değil, tahmindir.
 """
 
 from __future__ import annotations
@@ -146,7 +146,7 @@ def recommend(
     - method="mc": `n_simulations` deste sırası, adaydan sonra `rollout` politikası
       (varsayılan: açgözlü) ile devam.
     - method="pimc": `n_simulations` deste sırası, her biri için kahin planı. Tahmini
-      olasılıklar iyimserdir; ölçümlerde altına en iyi oynayan yöntem budur.
+      olasılıklar iyimserdir; ölçümlerde MC'den anlamlı farkı çıkmadı (deneysel).
     """
     if method not in METHODS:
         raise ValueError(f"Bilinmeyen yöntem: {method!r} (seçenekler: {METHODS})")

@@ -32,10 +32,10 @@ def _interval(ci: tuple[float, float]) -> str:
 def get_advice(default_n: int = 500, method: str | None = None) -> Advice | None:
     """Mevcut karar anı için öneriler (aynı durum için önbellekten).
 
-    Yöntem verilmezse kenar çubuğundaki seçim (varsayılan: PIMC) kullanılır.
+    Yöntem verilmezse kenar çubuğundaki seçim (varsayılan: Monte Carlo) kullanılır.
     """
     session = ui.session()
-    method = method or st.session_state.get(METHOD, "pimc")
+    method = method or st.session_state.get(METHOD, "mc")
     if method == "pimc":
         # "pimc_n" arayüzde gösterilmez; testlerde hızlandırmak için kullanılır.
         n, rollout_key = st.session_state.get("pimc_n", DEFAULT_PIMC_SAMPLES), None

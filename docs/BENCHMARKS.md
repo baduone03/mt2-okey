@@ -126,6 +126,41 @@ Bulgular:
   kararları veriyor; oyun başına süre ise 1.39 sn'den 0.43 sn'ye indi. Hızlı motor
   ile referans yolun eşitliği ayrıca `tests/test_fast.py` ile test ediliyor.
 
+### 6. Gerçek oyun geri bildirimi sonrası analiz
+
+**Gerçek oyun geri bildirimi:** Kullanıcı 5 oyunun 2–3'ünde gümüş, kalanlarda bronz
+aldı. Bu, simülasyondaki yaklaşık %67'lik gümüş-veya-üstü oranıyla uyumlu. Altın,
+yalnızca sistemin önerisinden saparak (8 yerine en düşük kartları atarak) geldi.
+
+**Tavan (kahin):** Deste sırasını önceden bilen kusursuz bir oyuncunun azami puanı
+(tohum 2026, 1.000 deste):
+
+| | Altın | Gümüş-veya-üstü | Ortalama |
+|---|---|---|---|
+| Kahin (ulaşılamaz üst sınır) | %30.2 | %99.4 | 376.3 |
+
+Gerçekçi en iyi oyun bu tavanın altında kalır. Monte Carlo'nun %7–8'i ile tavan
+arasında iyileştirme payı var.
+
+**Karar kuralları (tohum 2026, ilk 300 deste, MC N=100):** Mevcut kuralın yanında
+saf sözlüksel sıralama, altın ağırlıklı fayda, yalnızca beklenen puan ve 300→400
+kademeli ödül denendi. Altın oranları %6.0 ile %8.3 arasında kaldı; hepsi örneklem
+belirsizliği (yaklaşık ±3 puan) içinde. Karar kuralı asıl kaldıraç değil.
+
+**Kahin planı (PIMC, 20 örnek), aynı 300 destede Monte Carlo ile eşleştirilmiş:**
+
+| Deste kümesi | PIMC altın | MC altın | Altın farkı | Gümüş-veya-üstü farkı | Puan farkı |
+|---|---|---|---|---|---|
+| Tohum 2026 | %10.7 | %6.0 | +4.7 ± 2.9 | +0.0 ± 6.0 | +4.1 ± 5.3 |
+| Tohum 7 | %7.7 | %9.0 | −1.3 ± 3.2 | −3.0 ± 5.9 | −2.5 ± 5.6 |
+
+İlk sonuç bağımsız destelerde tekrarlanmadı. İki ölçüm birlikte değerlendirildiğinde
+PIMC'nin MC'den daha iyi olduğu kanıtlanmış değil. Bu yüzden varsayılan yöntem Monte
+Carlo olarak kaldı; PIMC deneysel seçenek olarak duruyor. Kahin çözücüsünün
+doğruluğu, küçük oyun sonlarında kaba kuvvet aramayla test edildi (`tests/test_pimc.py`).
+
+Bu bölümdeki deney betikleri depoya eklenmedi. Sonuçlar ve yöntem burada belgelendi.
+
 ## Yorum
 
 - **Monte Carlo açık ara en iyisi.** Aynı destelerde açgözlüye göre altın sandık

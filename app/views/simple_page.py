@@ -19,6 +19,8 @@ from views import state as ui
 from views.card_grid import COLOR_HEX, TEXT_ON_COLOR, render as render_grid
 from views.recommendations import get_advice
 
+# Sade ekranda doğrulanmış Monte Carlo yöntemi; doğruluk için karar başına 500 simülasyon.
+SIMPLE_N = 500
 CONFIRM_NEW = "okey_confirm_new"
 CHEST_TEXT = {Chest.BRONZE: "🥉 Bronz sandık", Chest.SILVER: "🥈 Gümüş sandık", Chest.GOLD: "🥇 Altın sandık"}
 
@@ -114,7 +116,7 @@ def render() -> None:
             sub = "Yanlış girdiğin karta tekrar dokunarak silebilirsin"
         _box("okey-wait", verb, "", sub)
     else:
-        advice = get_advice(method="pimc")
+        advice = get_advice(SIMPLE_N, method="mc")
         best = advice.best
         highlight = frozenset(best.cards)
         chips = "".join(_chip(c) for c in best.cards)

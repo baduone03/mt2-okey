@@ -8,7 +8,8 @@ toplam puana göre seçilir.
 Monte Carlo rollout'tan (bir adım + açgözlü devam) farkı: yüksek puanlı üçlüler için
 kart saklamanın değerini görebilmesidir. Tahmini olasılıklar iyimserdir (kahin
 gelecek kartları bilir); sıralama için kullanılır, kesin olasılık değildir.
-Ölçümler: docs/BENCHMARKS.md.
+İki bağımsız 300 oyunluk ölçümde Monte Carlo'ya göre altın farkı +4,7 ± 2,9 ve
+−1,3 ± 3,2 puan çıktı; yani anlamlı bir üstünlüğü kanıtlanmadı (docs/BENCHMARKS.md).
 """
 
 from __future__ import annotations

@@ -47,12 +47,12 @@ def render() -> None:
         st.header("Simülasyon")
         st.radio(
             "Yöntem",
-            options=["pimc", "mc"],
-            format_func={"pimc": "Kahin planı (önerilen)", "mc": "Monte Carlo"}.get,
+            options=["mc", "pimc"],
+            format_func={"mc": "Monte Carlo", "pimc": "Kahin planı (deneysel)"}.get,
             key="advice_method",
             help=(
-                "Kahin planı, ölçümlerde altın oranını en çok artıran yöntemdir "
-                "(docs/BENCHMARKS.md). Aşağıdaki ayarlar yalnızca Monte Carlo içindir."
+                "Kahin planı deneyseldir: iki bağımsız ölçümde Monte Carlo'dan anlamlı bir farkı "
+                "çıkmadı (docs/BENCHMARKS.md). Aşağıdaki ayarlar yalnızca Monte Carlo içindir."
             ),
         )
         st.select_slider(
